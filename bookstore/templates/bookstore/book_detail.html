@@ -1,29 +1,28 @@
 {% extends 'bookstore/base.html' %}
 
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-    <div class="w-full">
-        <div class="w-full h-96 bg-gray-300 rounded-lg"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    <!-- Book Image -->
+    <div class="w-full flex justify-center">
+        <img src="{{ book.image_url }}" alt="{{ book.title }}" class="w-80 object-cover rounded-lg">
     </div>
+
+    <!-- Book Info -->
     <div>
         <h1 class="text-4xl font-bold mb-4">{{ book.title }}</h1>
-        <p class="text-xl mb-2">By {{ book.author }}</p>
-        <p class="text-2xl font-bold mb-4">${{ book.price }}</p>
+        <p class="text-xl mb-2">Category: {{ book.category.name | title }}</p>
+        <p class="text-md mb-2">{{ book.product_description }}</p>
+        <p class="text-2xl font-bold mb-4">{{ book.price_including_tax }}</p>
+
+        <!-- Book Info Stats -->
         <div class="stats shadow mb-4">
-            <div class="stat">
-                <div class="stat-title">ISBN</div>
-                <div class="stat-value text-lg">{{ book.isbn }}</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">Genre</div>
-                <div class="stat-value text-lg">{{ book.genre.name }}</div>
-            </div>
             <div class="stat">
                 <div class="stat-title">Stock</div>
                 <div class="stat-value text-lg">{{ book.stock.quantity_in_stock }}</div>
             </div>
         </div>
 
+        <!-- Add to Cart Form -->
         <form method="post" action="{% url 'bookstore:add_to_cart' book.id %}" class="flex gap-4 items-end">
             {% csrf_token %}
             <div class="form-control w-24">
@@ -40,21 +39,27 @@
 
 <div class="divider my-8">Related Books</div>
 
+<!-- Related Books -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    {% for book in related_books %}
+    {% for related_book in related_books %}
     <div class="card bg-base-100 shadow-xl">
         <figure class="px-10 pt-10">
-            <div class="w-full h-48 bg-gray-300"></div>
+            <img src="{{ related_book.image_url }}" alt="{{ related_book.title }}" class="w-full h-48 object-cover">
         </figure>
         <div class="card-body">
-            <h2 class="card-title">{{ book.title }}</h2>
-            <p>By {{ book.author }}</p>
-            <p class="text-lg font-bold">${{ book.price }}</p>
+            <h2 class="card-title">{{ related_book.title }}</h2>
+            <p class="text-sm text-gray-600">Category: {{ related_book.category.name }}</p>
+            <p class="text-lg font-bold">{{ related_book.price_including_tax }}</p>
             <div class="card-actions justify-end">
-                <a href="{% url 'bookstore:book_detail' book.id %}" class="btn btn-primary">View Details</a>
+                <a href="{% url 'bookstore:book_detail' related_book.id %}" class="btn btn-primary">View Details</a>
             </div>
         </div>
     </div>
+    {% empty %}
+    <div class="col-span-full text-center py-8">
+        <p class="text-xl">No related books found.</p>
+    </div>
     {% endfor %}
 </div>
+
 {% endblock %}

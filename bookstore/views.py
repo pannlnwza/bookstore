@@ -1,18 +1,18 @@
-# views.py
+
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Book, Genre, Order, OrderItem, Stock
+from .models import Book, Category, Order, OrderItem, Stock
 from decimal import Decimal
 
 
 def home(request):
     featured_books = Book.objects.select_related('stock').all()[:6]
-    genres = Genre.objects.all()
+    category = Category.objects.all()
     return render(request, 'bookstore/home.html', {
         'featured_books': featured_books,
-        'genres': genres
+        'category': category
     })
 
 
@@ -27,10 +27,10 @@ def book_list(request):
     if search_query:
         books = books.filter(title__icontains=search_query)
 
-    genres = Genre.objects.all()
+    category = Category.objects.all()
     return render(request, 'bookstore/book_list.html', {
         'books': books,
-        'genres': genres,
+        'category': category,
         'current_genre': genre_id,
         'search_query': search_query
     })
@@ -38,7 +38,7 @@ def book_list(request):
 
 def book_detail(request, book_id):
     book = get_object_or_404(Book.objects.select_related('stock'), id=book_id)
-    related_books = Book.objects.filter(genre=book.genre).exclude(id=book_id)[:4]
+    related_books = Book.objects.filter(category=book.category).exclude(id=book_id)[:4]
     return render(request, 'bookstore/book_detail.html', {
         'book': book,
         'related_books': related_books
@@ -62,6 +62,7 @@ def add_to_cart(request, book_id):
 
         messages.success(request, f'Added {book.title} to your cart')
     return redirect('bookstore:book_detail', book_id=book_id)
+
 def view_cart(request):
     cart = request.session.get('cart', {})
     cart_items = []
