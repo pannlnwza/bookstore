@@ -1,11 +1,12 @@
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Book, Category, Order, OrderItem, Stock
+from .models import Book, Category, Order, OrderItem, Stock, Cart, CartItem
 from decimal import Decimal
 from django.core.paginator import Paginator
+from django.views import generic
 
 
 def home(request):
@@ -51,39 +52,72 @@ def add_to_cart(request, book_id):
         book = get_object_or_404(Book, id=book_id)
         quantity = int(request.POST.get('quantity', 1))
 
-        # Check if the quantity is available in stock
         if quantity > book.stock.quantity_in_stock:
             messages.error(request, f'Only {book.stock.quantity_in_stock} items in stock.')
-            return redirect('book_detail', book_id=book_id)
+            return redirect('bookstore:book_detail', book_id=book_id)
 
-        # Add the book to the cart
-        cart = request.session.get('cart', {})
-        cart[str(book_id)] = cart.get(str(book_id), 0) + quantity
-        request.session['cart'] = cart
+        # Get the user's cart, or create one if it doesn't exist
+        cart, created = Cart.objects.get_or_create(user=request.user)
+
+        # Try to get the cart item or create it if it doesn't exist
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, book=book)
+
+        # If the item already exists in the cart, update the quantity
+        if not created:
+            cart_item.quantity += quantity
+            cart_item.save()
+        else:
+            # Set the price_at_time field when the item is first added
+            cart_item.price_at_time = Decimal(book.price_including_tax.replace('£', '').strip())
+            cart_item.save()
 
         messages.success(request, f'Added {book.title} to your cart')
     return redirect('bookstore:book_detail', book_id=book_id)
 
-def view_cart(request):
-    cart = request.session.get('cart', {})
-    cart_items = []
-    total = Decimal('0.00')
+def update_quantity(request):
+    if request.method == 'POST':
+        cart_item_id = request.POST.get('cart_item_id')
+        new_quantity = int(request.POST.get('quantity'))
 
-    for book_id, quantity in cart.items():
-        book = Book.objects.get(id=book_id)
-        subtotal = book.price * quantity
-        cart_items.append({
-            'book': book,
-            'quantity': quantity,
-            'subtotal': subtotal
-        })
-        total += subtotal
+        # Fetch the cart item
+        cart_item = get_object_or_404(CartItem, id=cart_item_id)
 
-    return render(request, 'bookstore/cart.html', {
-        'cart_items': cart_items,
-        'total': total
-    })
+        # Check if the quantity is valid and does not exceed available stock
+        if new_quantity > cart_item.book.stock.quantity_in_stock:
+            messages.error(request, f'Only {cart_item.book.stock.quantity_in_stock} items in stock.')
+        else:
+            cart_item.quantity = new_quantity
 
+            # Optionally update the price_at_time if the price changes (if needed)
+            cart_item.price_at_time = Decimal(cart_item.book.price_including_tax.replace('£', '').strip())
+
+            cart_item.save()
+            messages.success(request, f'Updated quantity of {cart_item.book.title} to {new_quantity}.')
+
+    return redirect('bookstore:view_cart')
+
+class ViewCart(generic.TemplateView, LoginRequiredMixin):
+    template_name = 'bookstore/cart.html'
+
+    def get_context_data(self, **kwargs):
+        cart = Cart.objects.filter(user=self.request.user).first()
+
+        cart_items = []
+        total = Decimal('0.00')
+
+        if cart:
+            for item in cart.items.all():
+                cart_items.append({
+                    'book': item.book,
+                    'quantity': item.quantity,
+                    'subtotal': item.subtotal
+                })
+                total += item.subtotal
+
+        context = super().get_context_data(**kwargs)
+        context['cart_items'] = cart_items
+        context['total'] = total
+        return context
 
 @login_required
 def order_list(request):
