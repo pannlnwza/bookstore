@@ -79,10 +79,9 @@ def add_to_cart(request, book_id):
 
 def update_quantity(request):
     if request.method == 'POST':
-        cart_item_id = request.POST.get('cart_item_id')
-        new_quantity = int(request.POST.get('quantity'))
+        cart_item_id = request.POST.get('cart_item_id')  # Get the cart item ID
+        new_quantity = int(request.POST.get('quantity'))  # Get the new quantity
 
-        # Fetch the cart item
         cart_item = get_object_or_404(CartItem, id=cart_item_id)
 
         # Check if the quantity is valid and does not exceed available stock
@@ -97,7 +96,15 @@ def update_quantity(request):
             cart_item.save()
             messages.success(request, f'Updated quantity of {cart_item.book.title} to {new_quantity}.')
 
-    return redirect('bookstore:view_cart')
+    return redirect('bookstore:cart')
+
+def remove_cart(request, cart_item_id):
+    if request.method == 'POST':
+        cart_item = get_object_or_404(CartItem, id=cart_item_id)
+        cart_item.delete()
+        messages.success(request, f'Removed')
+    return redirect('bookstore:cart')
+
 
 class ViewCart(generic.TemplateView, LoginRequiredMixin):
     template_name = 'bookstore/cart.html'
@@ -109,8 +116,9 @@ class ViewCart(generic.TemplateView, LoginRequiredMixin):
         total = Decimal('0.00')
 
         if cart:
-            for item in cart.items.all():
+            for item in cart.cartitem_set.all():
                 cart_items.append({
+                    'id': item.id,
                     'book': item.book,
                     'quantity': item.quantity,
                     'subtotal': item.subtotal

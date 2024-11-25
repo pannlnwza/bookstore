@@ -31,8 +31,10 @@
                         </td>
                         <td>{{ item.book.price_including_tax }}</td>
                         <td>
-                            <form method="post" action="" class="flex items-center gap-2">
+                            <form method="post" action="{% url 'bookstore:update_quantity' %}"
+                                  class="flex items-center gap-2">
                                 {% csrf_token %}
+                                <input type="hidden" name="cart_item_id" value="{{ item.id }}">
                                 <input type="number" name="quantity" value="{{ item.quantity }}" min="1"
                                        max="{{ item.book.stock.quantity_in_stock }}"
                                        class="input input-bordered input-sm w-20"/>
@@ -41,7 +43,7 @@
                         </td>
                         <td>{{ item.subtotal }}</td>
                         <td>
-                            <form method="post">
+                            <form method="post" action="{% url 'bookstore:remove_cart' item.id %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-error btn-sm">Remove</button>
                             </form>
@@ -106,8 +108,8 @@
                         <div class="space-y-2">
                             {% for item in cart_items %}
                                 <div class="flex justify-between">
-                                <span>{{ item.book.title }}</span>
-                                <span>{{ item.book.price_including_tax }}</span>
+                                    <span>{{ item.book.title }}</span>
+                                    <span>{{ item.book.price_including_tax }}</span>
                                 </div>
                             {% endfor %}
                             <div class="divider my-2"></div>

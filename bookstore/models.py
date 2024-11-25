@@ -93,7 +93,7 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-    price_at_time = models.DecimalField(max_digits=10, decimal_places=2)
+    price_at_time = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     @property
     def subtotal(self):
