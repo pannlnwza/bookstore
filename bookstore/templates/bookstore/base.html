@@ -31,7 +31,7 @@
                             <li><a href="{% url 'bookstore:order_list' %}">My Orders</a></li>
                             <li><a href="#">Logout</a></li>
                         {% else %}
-                            <li><a href="#">Login</a></li>
+                            <li><a href="{% url 'bookstore:login' %}">Login</a></li>
                         {% endif %}
                     </ul>
                 </div>
