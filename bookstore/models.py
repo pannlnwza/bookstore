@@ -1,19 +1,22 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-class Genre(models.Model):
+class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
 
 class Book(models.Model):
+    product_page_url = models.URLField()
+    universal_product_code = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
-    author = models.CharField(max_length=255)
-    isbn = models.CharField(max_length=20, unique=True)
-    published_date = models.DateField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, related_name="books")
+    price_including_tax = models.CharField(max_length=255)
+    price_excluding_tax = models.CharField(max_length=255)
+    product_description = models.TextField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    review_rating = models.CharField(max_length=50)
+    image_url = models.URLField()
 
     def __str__(self):
         return self.title
@@ -66,17 +69,9 @@ class Payment(models.Model):
     def __str__(self):
         return f"Payment for Order #{self.order.id}"
 
-class Supplier(models.Model):
-    name = models.CharField(max_length=255)
-    contact_info = models.TextField()
-
-    def __str__(self):
-        return self.name
-
 class Stock(models.Model):
     book = models.OneToOneField(Book, on_delete=models.CASCADE, related_name="stock")
     quantity_in_stock = models.PositiveIntegerField()
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name="supplied_books")
 
     def __str__(self):
         return f"Stock for {self.book.title}: {self.quantity_in_stock}"
