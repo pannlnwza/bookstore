@@ -23,18 +23,47 @@
                 <div class="flex-1 px-2 mx-2">
                     <a href="{% url 'bookstore:home' %}" class="btn btn-ghost normal-case text-xl">Bookstore</a>
                 </div>
+{#                <div class="flex-none hidden lg:block">#}
+{#                    <ul class="menu menu-horizontal">#}
+{#                        <li><a href="{% url 'bookstore:book_list' %}">Books</a></li>#}
+{#                        <li><a href="{% url 'bookstore:cart' %}">Cart</a></li>#}
+{#                        {% if user.is_authenticated %}#}
+{#                            <li><a href="{% url 'bookstore:order_list' %}">My Orders</a></li>#}
+{#                            <li><a href="{% url 'bookstore:login' %}">Logout</a></li>#}
+{#                        {% else %}#}
+{#                            <li><a href="{% url 'bookstore:login' %}">Login</a></li>#}
+{#                        {% endif %}#}
+{#                    </ul>#}
+{#                </div>#}
+                
                 <div class="flex-none hidden lg:block">
-                    <ul class="menu menu-horizontal">
-                        <li><a href="{% url 'bookstore:book_list' %}">Books</a></li>
-                        <li><a href="{% url 'bookstore:cart' %}">Cart</a></li>
-                        {% if user.is_authenticated %}
-                            <li><a href="{% url 'bookstore:order_list' %}">My Orders</a></li>
-                            <li><a href="#">Logout</a></li>
-                        {% else %}
-                            <li><a href="{% url 'bookstore:login' %}">Login</a></li>
-                        {% endif %}
-                    </ul>
-                </div>
+    <ul class="menu menu-horizontal">
+        <li><a href="{% url 'bookstore:book_list' %}">Books</a></li>
+        <li><a href="{% url 'bookstore:cart' %}">Cart</a></li>
+        <li><a href="{% url 'bookstore:order_list' %}">My Orders</a></li>
+        {% if user.is_authenticated %}
+    <div class="dropdown dropdown-end">
+        <button tabindex="0" class="btn btn-primary btn-sm">
+            {{ user.username }} <!-- Display the logged-in user's username -->
+        </button>
+        <ul tabindex="0" class="menu dropdown-content bg-base-100 rounded-box w-25 p-2 shadow">
+    <form action="{% url 'account_logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-error btn-sm w-full">
+            Logout
+        </button>
+    </form>
+</ul>
+
+    </div>
+{% else %}
+    <li><a href="{% url 'login' %}">Login</a></li>
+{% endif %}
+
+    </ul>
+</div>
+
+            
             </div>
             <!-- Page content -->
             <main class="container mx-auto px-4 py-8">

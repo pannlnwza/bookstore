@@ -19,36 +19,120 @@
                 </p>
             </div>
             <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-                <form class="card-body">
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">Email</span>
-                        </label>
-                        <input type="email" placeholder="email" class="input input-bordered" required />
-                    </div>
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">Password</span>
-                        </label>
-                        <input type="password" placeholder="password" class="input input-bordered" required />
-                    </div>
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">Confirm Password</span>
-                        </label>
-                        <input type="password" placeholder="confirm password" class="input input-bordered" required />
-                    </div>
-                    <div class="form-control items-center justify-center text-center my-2 mb-0">
-                        <label class="label mb-0">
-                            <span class="label-text">Already have an account?
-                                <a href="{% url 'bookstore:login' %}" class="label-text-alt link link-hover font-green">Login</a>
-                            </span>
-                        </label>
-                    </div>
-                    <div class="form-control mt-6">
-                        <button class="btn btn-primary">Sign Up</button>
-                    </div>
-                </form>
+{#                <form class="card-body">#}
+{#                     <div class="form-control">#}
+{#                        <label class="label">#}
+{#                            <span class="label-text">Username</span>#}
+{#                        </label>#}
+{#                        <input type="text" placeholder="username" class="input input-bordered" required />#}
+{#                    </div>#}
+{#                    <div class="form-control">#}
+{#                        <label class="label">#}
+{#                            <span class="label-text">Email</span>#}
+{#                        </label>#}
+{#                        <input type="email" placeholder="email" class="input input-bordered" required />#}
+{#                    </div>#}
+{#                    <div class="form-control">#}
+{#                        <label class="label">#}
+{#                            <span class="label-text">Password</span>#}
+{#                        </label>#}
+{#                        <input type="password" placeholder="password" class="input input-bordered" required />#}
+{#                    </div>#}
+{#                    <div class="form-control">#}
+{#                        <label class="label">#}
+{#                            <span class="label-text">Confirm Password</span>#}
+{#                        </label>#}
+{#                        <input type="password" placeholder="confirm password" class="input input-bordered" required />#}
+{#                    </div>#}
+{#                    <div class="form-control items-center justify-center text-center my-2 mb-0">#}
+{#                        <label class="label mb-0">#}
+{#                            <span class="label-text">Already have an account?#}
+{#                                <a href="{% url 'login' %}" class="label-text-alt link link-hover font-green">Login</a>#}
+{#                            </span>#}
+{#                        </label>#}
+{#                    </div>#}
+{#                    <div class="form-control mt-6">#}
+{#                        <a href="{% url 'bookstore:home' %}" class="btn btn-primary">Sign Up</a>#}
+{#                    </div>#}
+{#                </form>#}
+                
+<form class="card-body" method="POST" action="{% url 'signup' %}">
+    {% csrf_token %}
+    
+    <!-- Username Field -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Username</span>
+        </label>
+        <input type="text" name="username" placeholder="username"
+               value="{{ form.username.value|default:'' }}" class="input input-bordered" required />
+        {% if form.username.errors %}
+            <p class="text-red-500 text-sm">{{ form.username.errors.0 }}</p>
+        {% endif %}
+    </div>
+    
+    <!-- Email Field -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Email</span>
+        </label>
+        <input type="email" name="email" placeholder="email"
+               value="{{ form.email.value|default:'' }}" class="input input-bordered" required />
+        {% if form.email.errors %}
+            <p class="text-red-500 text-sm">{{ form.email.errors.0 }}</p>
+        {% endif %}
+    </div>
+    
+    <!-- Password Field -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Password</span>
+        </label>
+        <input type="password" name="password" placeholder="password"
+               class="input input-bordered" required />
+        {% if form.password.errors %}
+            <p class="text-red-500 text-sm">{{ form.password.errors.0 }}</p>
+        {% endif %}
+    </div>
+    
+    <!-- Confirm Password Field -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">Confirm Password</span>
+        </label>
+        <input type="password" name="confirm_password" placeholder="confirm password"
+               class="input input-bordered" required />
+        {% if form.confirm_password.errors %}
+            <p class="text-red-500 text-sm">{{ form.confirm_password.errors.0 }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Already have an account -->
+    <div class="form-control items-center justify-center text-center my-2 mb-0">
+        <label class="label mb-0">
+            <span class="label-text">Already have an account?
+                <a href="{% url 'login' %}" class="label-text-alt link link-hover font-green">Login</a>
+            </span>
+        </label>
+    </div>
+    
+    <!-- Submit Button -->
+    <div class="form-control mt-6">
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+    </div>
+</form>
+
+
+
+{% if messages %}
+    <div class="alert alert-error mt-4">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+            
+            
             </div>
         </div>
     </div>

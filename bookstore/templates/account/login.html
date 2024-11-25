@@ -16,35 +16,44 @@
             <div class="text-center lg:text-left">
                 <h1 class="text-5xl font-bold">Login now</h1>
                 <p class="py-6">
-                    Kuy pannn nnn nnnn nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+                    Welcome! Please log in to continue.
                 </p>
             </div>
             <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-                <form class="card-body">
+                <form class="card-body" method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text">Email</span>
+                            <span class="label-text">Username</span>
                         </label>
-                        <input type="email" placeholder="email" class="input input-bordered" required/>
+                        <input type="text" name="username" placeholder="username" class="input input-bordered" required/>
                     </div>
                     <div class="form-control">
                         <label class="label">
                             <span class="label-text">Password</span>
                         </label>
-                        <input type="password" placeholder="password" class="input input-bordered" required/>
+                        <input type="password" name="password" placeholder="password" class="input input-bordered" required/>
                     </div>
                     <div class="form-control items-center justify-center text-center my-2 mb-0">
                         <label class="label mb-0">
                             <span class="label-text">Don't have an account?
-                                <a href="{% url 'bookstore:signup' %}" class="label-text-alt link link-hover font-green">Sign Up</a>
+                                <a href="{% url 'signup' %}" class="label-text-alt link link-hover font-green">Sign Up</a>
                             </span>
                         </label>
                     </div>
                     <div class="form-control mt-6">
-                        <button class="btn btn-primary">Login</button>
+                        <button type="submit" class="btn btn-primary">Login</button>
                     </div>
                 </form>
+                {% if messages %}
+                    <div class="alert alert-error mt-4">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </body>
+</html>
