@@ -1,0 +1,125 @@
+{% extends 'bookstore/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">Order #{{ order.id }}</h1>
+        <div class="badge badge-lg badge-primary">{{ order.status }}</div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Order Details -->
+        <div class="md:col-span-2 space-y-6">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Order Items</h2>
+                    <div class="overflow-x-auto">
+                        <table class="table w-full">
+                            <thead>
+                                <tr>
+                                    <th>Book</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.order_items.all %}
+                                <tr>
+                                    <td>
+                                        <div class="flex items-center space-x-3">
+                                            <div>
+                                                <div class="font-bold">{{ item.book.title }}</div>
+                                                <div class="text-sm opacity-50">{{ item.book.author }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${{ item.price_at_time }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ item.price_at_time|multiply:item.quantity }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-right font-bold">Shipping:</td>
+                                    <td>$5.00</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-right font-bold">Total:</td>
+                                    <td class="font-bold">${{ order.total_amount }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Timeline -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Order Timeline</h2>
+                    <ul class="steps steps-vertical">
+                        <li data-content="✓" class="step step-primary">
+                            Order Placed
+                            <span class="text-sm opacity-70">{{ order.order_date|date:"F j, Y" }}</span>
+                        </li>
+                        <li data-content="{% if order.status != 'Pending' %}✓{% endif %}"
+                            class="step {% if order.status != 'Pending' %}step-primary{% endif %}">
+                            Payment Confirmed
+                        </li>
+                        <li data-content="{% if order.status == 'Shipped' or order.status == 'Delivered' %}✓{% endif %}"
+                            class="step {% if order.status == 'Shipped' or order.status == 'Delivered' %}step-primary{% endif %}">
+                            Shipped
+                        </li>
+                        <li data-content="{% if order.status == 'Delivered' %}✓{% endif %}"
+                            class="step {% if order.status == 'Delivered' %}step-primary{% endif %}">
+                            Delivered
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Shipping Information -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Shipping Information</h2>
+                    <div class="space-y-2">
+                        <p><strong>Name:</strong> {{ order.customer.first_name }} {{ order.customer.last_name }}</p>
+                        <p><strong>Email:</strong> {{ order.customer.email }}</p>
+                        {% if order.customer.phone_number %}
+                            <p><strong>Phone:</strong> {{ order.customer.phone_number }}</p>
+                        {% endif %}
+                        <p><strong>Address:</strong></p>
+                        <p class="whitespace-pre-line">{{ order.customer.address }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Payment Information</h2>
+                    <div class="space-y-2">
+                        <p><strong>Method:</strong> {{ order.payment.payment_method }}</p>
+                        <p><strong>Date:</strong> {{ order.payment.payment_date|date:"F j, Y" }}</p>
+                        <p><strong>Amount:</strong> ${{ order.payment.amount }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Need Help? -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Need Help?</h2>
+                    <p>If you have any questions about your order, please contact our customer support.</p>
+                    <button class="btn btn-primary mt-4">Contact Support</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

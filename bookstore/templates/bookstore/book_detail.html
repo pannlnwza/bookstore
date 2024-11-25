@@ -1,0 +1,60 @@
+{% extends 'bookstore/base.html' %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="w-full">
+        <div class="w-full h-96 bg-gray-300 rounded-lg"></div>
+    </div>
+    <div>
+        <h1 class="text-4xl font-bold mb-4">{{ book.title }}</h1>
+        <p class="text-xl mb-2">By {{ book.author }}</p>
+        <p class="text-2xl font-bold mb-4">${{ book.price }}</p>
+        <div class="stats shadow mb-4">
+            <div class="stat">
+                <div class="stat-title">ISBN</div>
+                <div class="stat-value text-lg">{{ book.isbn }}</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Genre</div>
+                <div class="stat-value text-lg">{{ book.genre.name }}</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Stock</div>
+                <div class="stat-value text-lg">{{ book.stock.quantity_in_stock }}</div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'bookstore:add_to_cart' book.id %}" class="flex gap-4 items-end">
+            {% csrf_token %}
+            <div class="form-control w-24">
+                <label class="label">
+                    <span class="label-text">Quantity</span>
+                </label>
+                <input type="number" name="quantity" value="1" min="1" max="{{ book.stock.quantity_in_stock }}"
+                       class="input input-bordered w-full" />
+            </div>
+            <button type="submit" class="btn btn-primary">Add to Cart</button>
+        </form>
+    </div>
+</div>
+
+<div class="divider my-8">Related Books</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for book in related_books %}
+    <div class="card bg-base-100 shadow-xl">
+        <figure class="px-10 pt-10">
+            <div class="w-full h-48 bg-gray-300"></div>
+        </figure>
+        <div class="card-body">
+            <h2 class="card-title">{{ book.title }}</h2>
+            <p>By {{ book.author }}</p>
+            <p class="text-lg font-bold">${{ book.price }}</p>
+            <div class="card-actions justify-end">
+                <a href="{% url 'bookstore:book_detail' book.id %}" class="btn btn-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

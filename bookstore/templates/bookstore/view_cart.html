@@ -1,0 +1,19 @@
+{% extends 'bookstore/base.html' %}
+
+{% block content %}
+  <h1>Your Shopping Cart</h1>
+
+  {% if cart_items %}
+    <ul>
+      {% for item in cart_items %}
+        <li>
+          {{ item.book.title }} - {{ item.quantity }} x ${{ item.book.price }} = ${{ item.subtotal }}
+        </li>
+      {% endfor %}
+    </ul>
+    <p><strong>Total: ${{ total }}</strong></p>
+    <a href="{% url 'checkout' %}" class="btn btn-primary">Proceed to Checkout</a>
+  {% else %}
+    <p>Your cart is empty!</p>
+  {% endif %}
+{% endblock %}

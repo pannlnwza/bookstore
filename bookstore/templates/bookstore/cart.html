@@ -1,0 +1,148 @@
+{% extends 'bookstore/base.html' %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">Shopping Cart</h1>
+
+{% if cart_items %}
+<div class="overflow-x-auto">
+    <table class="table w-full">
+        <thead>
+            <tr>
+                <th>Book</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-16 h-16 bg-gray-300"></div>
+                        <div>
+                            <div class="font-bold">{{ item.book.title }}</div>
+                            <div class="text-sm opacity-50">{{ item.book.author }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${{ item.book.price }}</td>
+                <td>
+                    <form method="post"  class="flex items-center gap-2">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1"
+                               max="{{ item.book.stock.quantity_in_stock }}"
+                               class="input input-bordered input-sm w-20" />
+                        <button type="submit" class="btn btn-ghost btn-sm">Update</button>
+                    </form>
+                </td>
+                <td>${{ item.subtotal }}</td>
+                <td>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-error btn-sm">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-right font-bold">Total:</td>
+                <td class="font-bold">${{ total }}</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="divider"></div>
+
+    <div class="flex flex-col md:flex-row justify-between items-start gap-8 mt-8">
+        <!-- Shipping Information -->
+        <div class="card bg-base-100 shadow-xl flex-1">
+            <div class="card-body">
+                <h2 class="card-title">Shipping Information</h2>
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Full Name</span>
+                        </label>
+                        <input type="text" name="full_name" required class="input input-bordered" />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Email</span>
+                        </label>
+                        <input type="email" name="email" required class="input input-bordered" />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Phone Number</span>
+                        </label>
+                        <input type="tel" name="phone" class="input input-bordered" />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Address</span>
+                        </label>
+                        <textarea name="address" required class="textarea textarea-bordered" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="card bg-base-100 shadow-xl w-full md:w-96">
+            <div class="card-body">
+                <h2 class="card-title">Order Summary</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span>${{ total }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Shipping:</span>
+                        <span>$5.00</span>
+                    </div>
+                    <div class="divider my-2"></div>
+                    <div class="flex justify-between font-bold">
+                        <span>Total:</span>
+                        <span>${{ total|add:"5.00" }}</span>
+                    </div>
+                </div>
+
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text">Payment Method</span>
+                    </label>
+                    <select name="payment_method" class="select select-bordered w-full">
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="PayPal">PayPal</option>
+                    </select>
+                </div>
+
+                <button type="submit" form="checkout-form" class="btn btn-primary mt-6">
+                    Proceed to Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body text-center">
+        <h2 class="card-title justify-center">Your cart is empty</h2>
+        <p>Looks like you haven't added any books to your cart yet.</p>
+        <div class="card-actions justify-center mt-4">
+            <a href="{% url 'bookstore:book_list' %}" class="btn btn-primary">
+                Browse Books
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
