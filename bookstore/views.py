@@ -5,6 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Book, Genre, Order, OrderItem, Stock
 from decimal import Decimal
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib import messages
 
 
 def home(request):
@@ -81,6 +84,25 @@ def view_cart(request):
         'cart_items': cart_items,
         'total': total
     })
+
+def login(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            auth_login(request, user)
+            return redirect('bookstore:home')
+        else:
+            messages.error(request, 'Invalid username or password')
+    return render(request, 'account/login.html')
+
+
+def signup(request):
+    if request.method == 'POST':
+        # Handle user registration logic here
+        pass  # Replace with actual sign-up logic
+    return render(request, 'account/signup.html')
 
 
 @login_required
