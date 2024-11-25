@@ -75,3 +75,29 @@ class Stock(models.Model):
 
     def __str__(self):
         return f"Stock for {self.book.title}: {self.quantity_in_stock}"
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Cart {self.id} for {self.user.username}"
+
+    @property
+    def total(self):
+        return sum(item.subtotal for item in self.cartitem_set.all())
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price_at_time = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    @property
+    def subtotal(self):
+        return self.price_at_time * self.quantity
+
+    def __str__(self):
+        return f"{self.quantity} x {self.book.title}"
