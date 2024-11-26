@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 app_name = 'bookstore'
@@ -14,5 +15,10 @@ urlpatterns = [
     path('update_quantity/', views.update_quantity, name='update_quantity'),
     path('remove_cart/<int:cart_item_id>', views.remove_cart, name='remove_cart'),
     path('checkout/', views.place_order, name='proceed_to_payment'),
+    path('stock/', views.StockManagementView.as_view(), name='stock_management'),
+    path('add/', views.add_book, name='add_book'),
+    path('edit-book/<int:book_id>/', views.edit_book, name='edit_book'),
+    path('delete-book/<int:book_id>/', views.delete_book, name='delete_book'),
+    path('add-book/', views.AddView.as_view(), name='add')
 
 ]
