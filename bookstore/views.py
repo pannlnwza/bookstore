@@ -9,19 +9,19 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib import messages
 from bookstore.forms import SignUpForm
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views import generic
 
-def home(request):
-    featured_books = Book.objects.select_related('stock').all()[:6]
-    category = Category.objects.all()
-    return render(request, 'bookstore/home.html', {
-        'featured_books': featured_books,
-        'category': category
-    })
 
+class HomeView(generic.TemplateView):
+    template_name = 'bookstore/home.html'
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['featured_books'] = Book.objects.select_related('stock').all()[:6]
+        context['category'] = Category.objects.all()
+        return context
+
 
 
 def book_list(request):
@@ -60,7 +60,6 @@ def book_list(request):
         'categories': categories,
         'current_genre': genre_id,
         'search_query': search_query,
-        # Pass the search query for potential UI display
     })
 
 
