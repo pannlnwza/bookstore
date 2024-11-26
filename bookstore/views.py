@@ -24,26 +24,49 @@ class HomeView(generic.TemplateView):
         return context
 
 
-
 def book_list(request):
     # Retrieve and validate query parameters
     genre_id = request.GET.get('genre')
-    search_query = request.GET.get('search',
-                                   '')  # Default to '' if not provided
-    books = Book.objects.select_related('stock')
+    search_query = request.GET.get('search', '')
+    max_price = request.GET.get(
+        'max_price')  # Retrieve max_price from query parameters
+    books = Book.objects.select_related(
+        'stock')  # Include related stock data if necessary
 
-    # Validate genre_id to ensure it is numeric
+    # Validate and filter by genre
     if genre_id and genre_id.isdigit():
         books = books.filter(genre_id=int(genre_id))
 
-    # Perform a default search for all books when entering the page for the first time
-    books = books.filter(title__icontains=search_query)
+    # Perform a search for books matching the query
+    if search_query:
+        books = books.filter(title__icontains=search_query)
 
-    # Get all categories for filtering
+    # Filter by max price if provided and valid
+    if max_price:
+        try:
+            max_price = float(max_price)  # Convert max_price to float
+            filtered_books = []
+
+            for book in books:
+                # Clean up the price by removing '$' and commas, then convert it to float
+                clean_price = book.price.replace('$', '').replace(',', '')
+                try:
+                    book_price = float(clean_price)  # Convert to float
+                    if book_price <= max_price:
+                        filtered_books.append(
+                            book)  # Add book to the filtered list if price is within the range
+                except ValueError:
+                    pass  # Ignore books with invalid price formats
+
+            books = filtered_books  # Update books with filtered results
+        except ValueError:
+            pass  # Ignore invalid max_price input
+
+    # Get all genres for the filter dropdown
     genres = Genre.objects.all()
-    paginator = Paginator(books, 12)
 
-    # Get the current page number from the request
+    # Paginate the books
+    paginator = Paginator(books, 12)  # 12 books per page
     page_number = request.GET.get('page')
 
     try:
@@ -61,6 +84,7 @@ def book_list(request):
         'genres': genres,
         'current_genre': genre_id,
         'search_query': search_query,
+        'max_price': max_price,
     })
 
 
