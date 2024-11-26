@@ -307,3 +307,96 @@ class OrderDetailView(LoginRequiredMixin, generic.TemplateView):
         order = get_object_or_404(Order, id=order_id)
         context['order'] = order
         return context
+
+
+class StockManagementView(generic.TemplateView):
+    template_name = 'bookstore/stock_management.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['books'] = Book.objects.all()  # All books in stock
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            messages.error(request, "You are not authorized to view this page.")
+            return redirect('bookstore:home')
+        return super().dispatch(request, *args, **kwargs)
+
+class AddView(generic.TemplateView):
+    template_name = 'bookstore/add_book.html'
+
+
+
+@login_required
+def add_book(request):
+    if request.method == 'POST' and request.user.is_superuser:
+        title = request.POST.get('title')
+        genre_name = request.POST.get('genre')
+        price_including_tax = request.POST.get('price_including_tax')
+        price_excluding_tax = request.POST.get('price_excluding_tax')
+        product_description = request.POST.get('product_description')
+        review_rating = request.POST.get('review_rating')
+        image_url = request.POST.get('image_url')
+        product_page_url = request.POST.get('product_page_url')
+        universal_product_code = request.POST.get('universal_product_code')
+
+        genre = Genre.objects.get(name=genre_name) if Genre.objects.filter(
+            name=genre_name).exists() else Genre.objects.create(name=genre_name)
+
+        # Create new book
+        book = Book.objects.create(
+            title=title,
+            genre=genre,
+            price_including_tax=price_including_tax,
+            price_excluding_tax=price_excluding_tax,
+            product_description=product_description,
+            review_rating=review_rating,
+            image_url=image_url,
+            product_page_url=product_page_url,
+            universal_product_code=universal_product_code
+        )
+
+        # Redirect to stock management page with success message
+        messages.success(request, f"Book '{book.title}' added successfully.")
+        return redirect('bookstore:stock_management')
+
+
+
+@login_required
+def edit_book(request, book_id):
+    if request.user.is_superuser:
+        book = get_object_or_404(Book, id=book_id)
+
+        if request.method == 'POST':
+            # Update book attributes
+            book.title = request.POST.get('title', book.title)
+            book.price_including_tax = request.POST.get('price_including_tax', book.price_including_tax)
+            book.price_excluding_tax = request.POST.get('price_excluding_tax', book.price_excluding_tax)
+            book.product_description = request.POST.get('product_description', book.product_description)
+            book.review_rating = request.POST.get('review_rating', book.review_rating)
+            book.image_url = request.POST.get('image_url', book.image_url)
+            book.product_page_url = request.POST.get('product_page_url', book.product_page_url)
+            book.universal_product_code = request.POST.get('universal_product_code', book.universal_product_code)
+            book.save()
+
+            messages.success(request, f"Book '{book.title}' updated successfully.")
+            return redirect('stock_management')
+
+        return render(request, 'bookstore/edit_book.html', {'book': book})
+
+    messages.error(request, "You are not authorized to view this page.")
+    return redirect('bookstore:home')
+
+
+@login_required
+def delete_book(request, book_id):
+    if request.user.is_superuser:
+        book = get_object_or_404(Book, id=book_id)
+        book.delete()
+
+        messages.success(request, f"Book '{book.title}' deleted successfully.")
+        return redirect('bookstore:stock_management')
+
+    messages.error(request, "You are not authorized to view this page.")
+    return redirect('bookstore:home')

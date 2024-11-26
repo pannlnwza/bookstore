@@ -43,8 +43,8 @@
             <div class="card-body">
                 <h2 class="card-title">{{ book.title }}</h2>
                 <!-- Replace `By {{ book }}` with meaningful author info or use a placeholder -->
-                <p class="text-sm text-gray-600">Genre: {{ book.genre.name }}</p>
-                <p class="text-lg font-bold">{{ book.price_including_tax }}</p>
+                <p class="text-sm text-gray-600">Genre: {{ book.genre.name | title }}</p>
+                <p class="text-lg font-bold">{{ book.price }}</p>
                 <p class="text-sm text-gray-500">{{ book.product_description|truncatewords:20 }}</p> <!-- Truncate description for better display -->
                 <div class="card-actions justify-end">
                     <a href="{% url 'bookstore:book_detail' book.id %}" class="btn btn-primary">View Details</a>
