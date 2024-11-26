@@ -3,8 +3,6 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from urllib3 import request
 
 from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Customer
 from decimal import Decimal

@@ -1,5 +1,355 @@
 [
 {
+    "model": "bookstore.genre",
+    "pk": 1,
+    "fields": {
+        "name": "crime"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 2,
+    "fields": {
+        "name": "short stories"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 3,
+    "fields": {
+        "name": "music"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 4,
+    "fields": {
+        "name": "religion"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 5,
+    "fields": {
+        "name": "science fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 6,
+    "fields": {
+        "name": "psychology"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 7,
+    "fields": {
+        "name": "philosophy"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 8,
+    "fields": {
+        "name": "travel"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 9,
+    "fields": {
+        "name": "romance"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 10,
+    "fields": {
+        "name": "christian fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 11,
+    "fields": {
+        "name": "spirituality"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 12,
+    "fields": {
+        "name": "humor"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 13,
+    "fields": {
+        "name": "poetry"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 14,
+    "fields": {
+        "name": "business"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 15,
+    "fields": {
+        "name": "contemporary"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 16,
+    "fields": {
+        "name": "childrens"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 17,
+    "fields": {
+        "name": "horror"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 18,
+    "fields": {
+        "name": "health"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 19,
+    "fields": {
+        "name": "sequential art"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 20,
+    "fields": {
+        "name": "food and drink"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 21,
+    "fields": {
+        "name": "history"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 22,
+    "fields": {
+        "name": "parenting"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 23,
+    "fields": {
+        "name": "novels"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 24,
+    "fields": {
+        "name": "politics"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 25,
+    "fields": {
+        "name": "historical"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 26,
+    "fields": {
+        "name": "nonfiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 27,
+    "fields": {
+        "name": "erotica"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 28,
+    "fields": {
+        "name": "thriller"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 29,
+    "fields": {
+        "name": "cultural"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 30,
+    "fields": {
+        "name": "fantasy"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 31,
+    "fields": {
+        "name": "biography"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 32,
+    "fields": {
+        "name": "self help"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 33,
+    "fields": {
+        "name": "young adult"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 34,
+    "fields": {
+        "name": "womens fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 35,
+    "fields": {
+        "name": "academic"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 36,
+    "fields": {
+        "name": "add a comment"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 37,
+    "fields": {
+        "name": "art"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 38,
+    "fields": {
+        "name": "new adult"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 39,
+    "fields": {
+        "name": "paranormal"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 40,
+    "fields": {
+        "name": "suspense"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 41,
+    "fields": {
+        "name": "historical fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 42,
+    "fields": {
+        "name": "fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 43,
+    "fields": {
+        "name": "classics"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 44,
+    "fields": {
+        "name": "default"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 45,
+    "fields": {
+        "name": "sports and games"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 46,
+    "fields": {
+        "name": "christian"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 47,
+    "fields": {
+        "name": "mystery"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 48,
+    "fields": {
+        "name": "adult fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 49,
+    "fields": {
+        "name": "science"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 50,
+    "fields": {
+        "name": "autobiography"
+    }
+},
+{
     "model": "bookstore.book",
     "pk": 1,
     "fields": {
@@ -1347,6 +1697,726 @@
         "genre": 50,
         "review_rating": "1 star(s)",
         "image_url": "http://books.toscrape.com/media/cache/f0/9f/f09fd4a3200b94db86364f308ac02530.jpg"
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 1,
+    "fields": {
+        "book": 1,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 2,
+    "fields": {
+        "book": 2,
+        "quantity_in_stock": 8
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 3,
+    "fields": {
+        "book": 3,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 4,
+    "fields": {
+        "book": 4,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 5,
+    "fields": {
+        "book": 5,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 6,
+    "fields": {
+        "book": 6,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 7,
+    "fields": {
+        "book": 7,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 8,
+    "fields": {
+        "book": 8,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 9,
+    "fields": {
+        "book": 9,
+        "quantity_in_stock": 14
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 10,
+    "fields": {
+        "book": 10,
+        "quantity_in_stock": 12
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 11,
+    "fields": {
+        "book": 11,
+        "quantity_in_stock": 18
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 12,
+    "fields": {
+        "book": 12,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 13,
+    "fields": {
+        "book": 13,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 14,
+    "fields": {
+        "book": 14,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 15,
+    "fields": {
+        "book": 15,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 16,
+    "fields": {
+        "book": 16,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 17,
+    "fields": {
+        "book": 17,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 18,
+    "fields": {
+        "book": 18,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 19,
+    "fields": {
+        "book": 19,
+        "quantity_in_stock": 18
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 20,
+    "fields": {
+        "book": 20,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 21,
+    "fields": {
+        "book": 21,
+        "quantity_in_stock": 14
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 22,
+    "fields": {
+        "book": 22,
+        "quantity_in_stock": 14
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 23,
+    "fields": {
+        "book": 23,
+        "quantity_in_stock": 22
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 24,
+    "fields": {
+        "book": 24,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 25,
+    "fields": {
+        "book": 25,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 26,
+    "fields": {
+        "book": 26,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 27,
+    "fields": {
+        "book": 27,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 28,
+    "fields": {
+        "book": 28,
+        "quantity_in_stock": 14
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 29,
+    "fields": {
+        "book": 29,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 30,
+    "fields": {
+        "book": 30,
+        "quantity_in_stock": 18
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 31,
+    "fields": {
+        "book": 31,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 32,
+    "fields": {
+        "book": 32,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 33,
+    "fields": {
+        "book": 33,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 34,
+    "fields": {
+        "book": 34,
+        "quantity_in_stock": 14
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 35,
+    "fields": {
+        "book": 35,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 36,
+    "fields": {
+        "book": 36,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 37,
+    "fields": {
+        "book": 37,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 38,
+    "fields": {
+        "book": 38,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 39,
+    "fields": {
+        "book": 39,
+        "quantity_in_stock": 20
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 40,
+    "fields": {
+        "book": 40,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 41,
+    "fields": {
+        "book": 41,
+        "quantity_in_stock": 3
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 42,
+    "fields": {
+        "book": 42,
+        "quantity_in_stock": 9
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 43,
+    "fields": {
+        "book": 43,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 44,
+    "fields": {
+        "book": 44,
+        "quantity_in_stock": 14
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 45,
+    "fields": {
+        "book": 45,
+        "quantity_in_stock": 14
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 46,
+    "fields": {
+        "book": 46,
+        "quantity_in_stock": 6
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 47,
+    "fields": {
+        "book": 47,
+        "quantity_in_stock": 18
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 48,
+    "fields": {
+        "book": 48,
+        "quantity_in_stock": 18
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 49,
+    "fields": {
+        "book": 49,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 50,
+    "fields": {
+        "book": 50,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 51,
+    "fields": {
+        "book": 51,
+        "quantity_in_stock": 18
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 52,
+    "fields": {
+        "book": 52,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 53,
+    "fields": {
+        "book": 53,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 54,
+    "fields": {
+        "book": 54,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 55,
+    "fields": {
+        "book": 55,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 56,
+    "fields": {
+        "book": 56,
+        "quantity_in_stock": 11
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 57,
+    "fields": {
+        "book": 57,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 58,
+    "fields": {
+        "book": 58,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 59,
+    "fields": {
+        "book": 59,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 60,
+    "fields": {
+        "book": 60,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 61,
+    "fields": {
+        "book": 61,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 62,
+    "fields": {
+        "book": 62,
+        "quantity_in_stock": 12
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 63,
+    "fields": {
+        "book": 63,
+        "quantity_in_stock": 5
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 64,
+    "fields": {
+        "book": 64,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 65,
+    "fields": {
+        "book": 65,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 66,
+    "fields": {
+        "book": 66,
+        "quantity_in_stock": 18
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 67,
+    "fields": {
+        "book": 67,
+        "quantity_in_stock": 14
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 68,
+    "fields": {
+        "book": 68,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 69,
+    "fields": {
+        "book": 69,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 70,
+    "fields": {
+        "book": 70,
+        "quantity_in_stock": 1
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 71,
+    "fields": {
+        "book": 71,
+        "quantity_in_stock": 8
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 72,
+    "fields": {
+        "book": 72,
+        "quantity_in_stock": 20
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 73,
+    "fields": {
+        "book": 73,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 74,
+    "fields": {
+        "book": 74,
+        "quantity_in_stock": 20
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 75,
+    "fields": {
+        "book": 75,
+        "quantity_in_stock": 17
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 76,
+    "fields": {
+        "book": 76,
+        "quantity_in_stock": 5
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 77,
+    "fields": {
+        "book": 77,
+        "quantity_in_stock": 5
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 78,
+    "fields": {
+        "book": 78,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 79,
+    "fields": {
+        "book": 79,
+        "quantity_in_stock": 19
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 80,
+    "fields": {
+        "book": 80,
+        "quantity_in_stock": 3
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 81,
+    "fields": {
+        "book": 81,
+        "quantity_in_stock": 3
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 82,
+    "fields": {
+        "book": 82,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 83,
+    "fields": {
+        "book": 83,
+        "quantity_in_stock": 14
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 84,
+    "fields": {
+        "book": 84,
+        "quantity_in_stock": 20
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 85,
+    "fields": {
+        "book": 85,
+        "quantity_in_stock": 18
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 86,
+    "fields": {
+        "book": 86,
+        "quantity_in_stock": 3
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 87,
+    "fields": {
+        "book": 87,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 88,
+    "fields": {
+        "book": 88,
+        "quantity_in_stock": 16
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 89,
+    "fields": {
+        "book": 89,
+        "quantity_in_stock": 15
+    }
+},
+{
+    "model": "bookstore.stock",
+    "pk": 90,
+    "fields": {
+        "book": 90,
+        "quantity_in_stock": 11
     }
 }
 ]
