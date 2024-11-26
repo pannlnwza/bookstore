@@ -57,9 +57,10 @@
         </div>
         {% endfor %}
     </div>
-        <!-- Pagination Controls -->
+<!-- Pagination Controls -->
 <div class="flex justify-center my-6">
     <div class="btn-group">
+        <!-- First and Previous Page -->
         {% if page_obj.has_previous %}
         <a href="?page=1&search={{ search_query }}&genre={{ current_genre }}" class="btn">First</a>
         <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&genre={{ current_genre }}" class="btn">Previous</a>
@@ -68,8 +69,16 @@
         <button class="btn btn-disabled">Previous</button>
         {% endif %}
 
-        <span class="btn btn-disabled">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <!-- Page Numbers -->
+        {% for page_num in page_obj.paginator.page_range %}
+            {% if page_num == page_obj.number %}
+                <span class="btn btn-active">{{ page_num }}</span>
+            {% else %}
+                <a href="?page={{ page_num }}&search={{ search_query }}&genre={{ current_genre }}" class="btn">{{ page_num }}</a>
+            {% endif %}
+        {% endfor %}
 
+        <!-- Next and Last Page -->
         {% if page_obj.has_next %}
         <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&genre={{ current_genre }}" class="btn">Next</a>
         <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&genre={{ current_genre }}" class="btn">Last</a>
@@ -79,7 +88,6 @@
         {% endif %}
     </div>
 </div>
-
 </div>
 </div>
 {% endblock %}

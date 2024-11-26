@@ -17,23 +17,46 @@ def home(request):
     })
 
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+
 def book_list(request):
+    # Retrieve and validate query parameters
     genre_id = request.GET.get('genre')
-    search_query = request.GET.get('search')
+    search_query = request.GET.get('search',
+                                   '')  # Default to '' if not provided
     books = Book.objects.select_related('stock')
-    if genre_id:
-        books = books.filter(genre_id=genre_id)
-    if search_query:
-        books = books.filter(title__icontains=search_query)
-    category = Category.objects.all()
+
+    # Validate genre_id to ensure it is numeric
+    if genre_id and genre_id.isdigit():
+        books = books.filter(category_id=int(genre_id))
+
+    # Perform a default search for all books when entering the page for the first time
+    books = books.filter(title__icontains=search_query)
+
+    # Get all categories for filtering
+    categories = Category.objects.all()
     paginator = Paginator(books, 12)
+
+    # Get the current page number from the request
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # If the page is not an integer, show the first page
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        # If the page is out of range, show the last page
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    # Render the results with all necessary context
     return render(request, 'bookstore/book_list.html', {
         'page_obj': page_obj,
-        'categories': category,
+        'categories': categories,
         'current_genre': genre_id,
-        'search_query': search_query
+        'search_query': search_query,
+        # Pass the search query for potential UI display
     })
 
 
@@ -112,4 +135,3 @@ def order_detail(request, order_id):
     return render(request, 'bookstore/orders/order_detail.html', {
         'order': order
     })
-
