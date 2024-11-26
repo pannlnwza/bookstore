@@ -1,9 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Book, Category, Order, OrderItem, Stock, Cart, CartItem
+from urllib3 import request
+
+from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Customer
 from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
@@ -19,7 +22,7 @@ class HomeView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['featured_books'] = Book.objects.select_related('stock').all()[:6]
-        context['category'] = Category.objects.all()
+        context['genre'] = Genre.objects.all()
         return context
 
 
@@ -33,13 +36,13 @@ def book_list(request):
 
     # Validate genre_id to ensure it is numeric
     if genre_id and genre_id.isdigit():
-        books = books.filter(category_id=int(genre_id))
+        books = books.filter(genre_id=int(genre_id))
 
     # Perform a default search for all books when entering the page for the first time
     books = books.filter(title__icontains=search_query)
 
     # Get all categories for filtering
-    categories = Category.objects.all()
+    genres = Genre.objects.all()
     paginator = Paginator(books, 12)
 
     # Get the current page number from the request
@@ -57,7 +60,7 @@ def book_list(request):
     # Render the results with all necessary context
     return render(request, 'bookstore/book_list.html', {
         'page_obj': page_obj,
-        'categories': categories,
+        'genres': genres,
         'current_genre': genre_id,
         'search_query': search_query,
     })
@@ -65,13 +68,108 @@ def book_list(request):
 
 def book_detail(request, book_id):
     book = get_object_or_404(Book.objects.select_related('stock'), id=book_id)
-    related_books = Book.objects.filter(category=book.category).exclude(id=book_id)[:4]
+    related_books = Book.objects.filter(genre=book.genre).exclude(id=book_id)[:4]
     return render(request, 'bookstore/book_detail.html', {
         'book': book,
         'related_books': related_books
     })
 
+@login_required
+def place_order(request):
+    if request.method == 'POST':
+        try:
+            # Get user's cart and cart items
+            cart = get_object_or_404(Cart, user=request.user)
+            cart_items = CartItem.objects.filter(cart=cart)
 
+            if not cart_items.exists():
+                messages.error(request, "Your cart is empty.")
+                return redirect('bookstore:cart')
+
+            # Validate stock availability
+            for cart_item in cart_items:
+                stock = Stock.objects.get(book=cart_item.book)
+                if cart_item.quantity > stock.quantity_in_stock:
+                    messages.error(request, f"Insufficient stock for {cart_item.book.title}.")
+                    return redirect('bookstore:cart')
+
+            # Collect form data
+            full_name = request.POST.get('full_name')
+            phone = request.POST.get('phone')
+            address = request.POST.get('address')
+            payment_method = request.POST.get('payment_method')
+
+            if not all([full_name, address, payment_method]):
+                messages.error(request, "Please fill in all required fields.")
+                return redirect('bookstore:cart')
+
+            # Check or create customer record
+            customer = Customer.objects.filter(user=request.user).first()
+            if not customer:
+                customer = Customer.objects.create(
+                    user=request.user,
+                    first_name=full_name.split()[0],
+                    last_name=" ".join(full_name.split()[1:]),
+                    email=request.user.email,
+                    phone_number=phone,
+                    address=address
+                )
+            else:
+                # Update customer information
+                customer.first_name = full_name.split()[0]
+                customer.last_name = " ".join(full_name.split()[1:])
+                customer.phone_number = phone
+                customer.address = address
+                customer.save()
+
+            with transaction.atomic():
+                # Create order
+                order = Order.objects.create(
+                    customer=customer,
+                    total_amount=cart.total
+                )
+
+                # Create order items and update stock
+                for cart_item in cart_items:
+                    OrderItem.objects.create(
+                        order=order,
+                        book=cart_item.book,
+                        quantity=cart_item.quantity,
+                        price_at_time=cart_item.price_at_time
+                    )
+
+                    # Deduct stock
+                    stock = Stock.objects.get(book=cart_item.book)
+                    stock.quantity_in_stock -= cart_item.quantity
+                    stock.save()
+
+                # Create payment
+                Payment.objects.create(
+                    order=order,
+                    payment_method=payment_method,
+                    amount=cart.total
+                )
+
+                # Clear the cart
+                cart_items.delete()
+                cart.delete()
+
+            # Notify the user
+            messages.success(request, f"Order #{order.id} placed successfully!")
+            print(order.id)
+            return redirect('bookstore:order_detail', order_id=order.id)
+
+        except Cart.DoesNotExist:
+            messages.error(request, "No active cart found.")
+            return redirect('bookstore:cart')
+
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+            return redirect('bookstore:cart')
+
+    return redirect('bookstore:cart')
+
+@login_required
 def add_to_cart(request, book_id):
     if request.method == 'POST':
         book = get_object_or_404(Book, id=book_id)
@@ -132,25 +230,31 @@ class ViewCart(generic.TemplateView, LoginRequiredMixin):
     template_name = 'bookstore/cart.html'
 
     def get_context_data(self, **kwargs):
-        cart = Cart.objects.filter(user=self.request.user).first()
+        # Ensure the user is authenticated
+        if self.request.user.is_authenticated:
+            # Retrieve the user's cart
+            cart = Cart.objects.filter(user=self.request.user).first()
 
-        cart_items = []
-        total = Decimal('0.00')
+            cart_items = []
+            total = Decimal('0.00')
 
-        if cart:
-            for item in cart.cartitem_set.all():
-                cart_items.append({
-                    'id': item.id,
-                    'book': item.book,
-                    'quantity': item.quantity,
-                    'subtotal': item.subtotal
-                })
-                total += item.subtotal
+            if cart:
+                # Loop through each cart item and accumulate the total
+                for item in cart.cartitem_set.all():
+                    cart_items.append({
+                        'id': item.id,
+                        'book': item.book,
+                        'quantity': item.quantity,
+                        'subtotal': item.subtotal
+                    })
+                    total += item.subtotal
+            context = super().get_context_data(**kwargs)
 
-        context = super().get_context_data(**kwargs)
-        context['cart_items'] = cart_items
-        context['total'] = total
-        return context
+            context['cart_items'] = cart_items
+            context['total'] = total
+
+            return context
+
 def login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -180,30 +284,28 @@ def signup(request):
 
     return render(request, 'account/signup.html', {'form': form})
 
-@login_required
-def order_list(request):
-    orders = Order.objects.filter(
-        user__email=request.user.email
-    ).order_by('-order_date')
+class OrderListView(LoginRequiredMixin, generic.ListView):
+    model = Order
+    template_name = 'bookstore/orders/order_list.html'
+    context_object_name = 'page_obj'
+    paginate_by = 10
 
-    paginator = Paginator(orders, 10)  # Show 10 orders per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    def get_queryset(self):
+        try:
+            customer = Customer.objects.get(user=self.request.user)
+            return Order.objects.filter(customer=customer).order_by('-order_date')
+        except Customer.DoesNotExist:
+            # If no Customer exists, return an empty queryset
+            return Order.objects.none()
 
-    return render(request, 'bookstore/orders/order_list.html', {
-        'page_obj': page_obj
-    })
 
+class OrderDetailView(LoginRequiredMixin, generic.TemplateView):
+    model = Order
+    template_name = 'bookstore/orders/order_detail.html'
 
-@login_required
-def order_detail(request, order_id):
-    order = get_object_or_404(
-        Order.objects.select_related('customer', 'payment')
-        .prefetch_related('order_items__book'),
-        id=order_id,
-        customer__email=request.user.email
-    )
-
-    return render(request, 'bookstore/orders/order_detail.html', {
-        'order': order
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        order_id = context['order_id']
+        order = get_object_or_404(Order, id=order_id)
+        context['order'] = order
+        return context

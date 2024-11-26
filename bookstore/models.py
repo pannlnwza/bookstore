@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-class Category(models.Model):
+class Genre(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -14,7 +14,7 @@ class Book(models.Model):
     price_including_tax = models.CharField(max_length=255)
     price_excluding_tax = models.CharField(max_length=255)
     product_description = models.TextField()
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
     review_rating = models.CharField(max_length=50)
     image_url = models.URLField()
 
@@ -22,6 +22,7 @@ class Book(models.Model):
         return self.title
 
 class Customer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -32,19 +33,12 @@ class Customer(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 class Order(models.Model):
-    STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Shipped', 'Shipped'),
-        ('Delivered', 'Delivered'),
-    ]
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     order_date = models.DateField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
 
     def __str__(self):
-        return f"Order #{self.id} - {self.status}"
+        return f"Order #{self.id}"
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
