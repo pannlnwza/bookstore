@@ -58,9 +58,9 @@
         {% endfor %}
     </div>
 <!-- Pagination Controls -->
-<div class="flex justify-center my-6">
-    <div class="btn-group">
-        <!-- First and Previous Page -->
+<div class="flex justify-center items-center my-6">
+    <!-- First and Previous -->
+    <div class="flex items-center space-x-4">
         {% if page_obj.has_previous %}
         <a href="?page=1&search={{ search_query }}&genre={{ current_genre }}" class="btn">First</a>
         <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&genre={{ current_genre }}" class="btn">Previous</a>
@@ -68,17 +68,25 @@
         <button class="btn btn-disabled">First</button>
         <button class="btn btn-disabled">Previous</button>
         {% endif %}
+    </div>
 
-        <!-- Page Numbers -->
-        {% for page_num in page_obj.paginator.page_range %}
-            {% if page_num == page_obj.number %}
-                <span class="btn btn-active">{{ page_num }}</span>
-            {% else %}
-                <a href="?page={{ page_num }}&search={{ search_query }}&genre={{ current_genre }}" class="btn">{{ page_num }}</a>
-            {% endif %}
-        {% endfor %}
+    <!-- Page x of y with Dropdown -->
+    <div class="relative mx-8">
+        <button class="btn" id="page-selector">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </button>
+        <div class="absolute left-0 hidden mt-2 w-full bg-white shadow-md border z-10" id="page-dropdown">
+            {% for page_num in page_obj.paginator.page_range %}
+            <a href="?page={{ page_num }}&search={{ search_query }}&genre={{ current_genre }}"
+               class="block px-4 py-2 hover:bg-gray-100">
+                Page {{ page_num }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
 
-        <!-- Next and Last Page -->
+    <!-- Next and Last -->
+    <div class="flex items-center space-x-4">
         {% if page_obj.has_next %}
         <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&genre={{ current_genre }}" class="btn">Next</a>
         <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&genre={{ current_genre }}" class="btn">Last</a>
@@ -88,6 +96,23 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    // Toggle dropdown visibility
+    document.getElementById('page-selector').addEventListener('click', function () {
+        const dropdown = document.getElementById('page-dropdown');
+        dropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (event) {
+        const dropdown = document.getElementById('page-dropdown');
+        const button = document.getElementById('page-selector');
+        if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+</script>
 </div>
 </div>
 {% endblock %}
