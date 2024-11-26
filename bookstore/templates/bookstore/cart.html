@@ -31,7 +31,8 @@
                         </td>
                         <td>{{ item.book.price_including_tax }}</td>
                         <td>
-                            <form method="post" action="{% url 'bookstore:update_quantity' %}"
+                            <form id="update-quantity-{{ item.id }}" method="post"
+                                  action="{% url 'bookstore:update_quantity' %}"
                                   class="flex items-center gap-2">
                                 {% csrf_token %}
                                 <input type="hidden" name="cart_item_id" value="{{ item.id }}">
@@ -62,25 +63,18 @@
 
             <div class="divider"></div>
 
-            <div class="flex flex-col md:flex-row justify-between items-start gap-8 mt-8">
+            <div class="flex flex-col lg:flex-row gap-8 mt-8">
                 <!-- Shipping Information -->
-                <div class="card bg-base-100 shadow-xl flex-1">
+                <div class="card bg-base-100 border-2 border-base-200 flex-1">
                     <div class="card-body">
                         <h2 class="card-title">Shipping Information</h2>
-                        <form method="post" class="space-y-4">
+                        <form id="checkout-form" method="post" action="{% url 'bookstore:proceed_to_payment' %}">
                             {% csrf_token %}
                             <div class="form-control">
                                 <label class="label">
                                     <span class="label-text">Full Name</span>
                                 </label>
                                 <input type="text" name="full_name" required class="input input-bordered"/>
-                            </div>
-
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text">Email</span>
-                                </label>
-                                <input type="email" name="email" required class="input input-bordered"/>
                             </div>
 
                             <div class="form-control">
@@ -97,12 +91,23 @@
                                 <textarea name="address" required class="textarea textarea-bordered"
                                           rows="3"></textarea>
                             </div>
+
+                            <div class="form-control mt-4">
+                                <label class="label">
+                                    <span class="label-text">Payment Method</span>
+                                </label>
+                                <select name="payment_method" class="select select-bordered w-full" required>
+                                    <option value="Credit Card">Credit Card</option>
+                                    <option value="PayPal">PayPal</option>
+                                </select>
+                            </div>
+
                         </form>
                     </div>
                 </div>
 
                 <!-- Order Summary -->
-                <div class="card bg-base-100 shadow-xl w-full md:w-96">
+                <div class="card bg-base-100 border-2 border-base-200 w-full h-[450px] lg:w-96">
                     <div class="card-body">
                         <h2 class="card-title">Order Summary</h2>
                         <div class="space-y-2">
@@ -117,24 +122,14 @@
                                 <span>Total:</span>
                                 <span>{{ total }}</span>
                             </div>
-                        </div>
-
-                        <div class="form-control mt-4">
-                            <label class="label">
-                                <span class="label-text">Payment Method</span>
-                            </label>
-                            <select name="payment_method" class="select select-bordered w-full">
-                                <option value="Credit Card">Credit Card</option>
-                                <option value="PayPal">PayPal</option>
-                            </select>
-                        </div>
-
                         <button type="submit" form="checkout-form" class="btn btn-primary mt-6">
-                            Proceed to Payment
-                        </button>
+                                Place Order
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
     {% else %}
         <div class="card bg-base-100 border-2 border-base-200">
