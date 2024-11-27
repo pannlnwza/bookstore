@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.template.defaultfilters import default
 
 
 class Genre(models.Model):
@@ -30,7 +29,6 @@ class Book(models.Model):
             return self.image.url
         return self.image_url
 
-
     @property
     def average_rating(self):
         reviews = self.reviews.all()
@@ -42,22 +40,13 @@ class Book(models.Model):
         return self.title
 
 
-class Customer(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField(null=True)
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
-
 class Order(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     order_date = models.DateField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     address = models.TextField()
+    full_name = models.TextField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         return f"Order #{self.id}"
@@ -124,18 +113,18 @@ class CartItem(models.Model):
 
 
 class Review(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="reviews")
     review_message = models.TextField(max_length=1000)  # Increased length for detailed reviews
     rating = models.PositiveSmallIntegerField()  # Typically between 1 and 5
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('customer', 'book')  # Ensures one review per customer per book
+        unique_together = ('user', 'book')  # Ensures one review per user per book
         ordering = ['-created_at']  # Newest reviews appear first
 
     def __str__(self):
-        return f"Review by {self.customer.first_name} on {self.book.title}"
+        return f"Review by {self.user.username} on {self.book.title}"
 
 
 class Favorite(models.Model):
