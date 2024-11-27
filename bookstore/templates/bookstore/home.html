@@ -5,7 +5,7 @@
         <div class="hero-content text-center">
             <div class="max-w-md">
                 <h1 class="text-5xl font-bold">Welcome to </h1>
-                <h1 class="text-5xl font-bold">Demalu Bookstore </h1>
+                <h1 class="text-5xl font-bold">Daimalu Bookstore </h1>
                 <p class="py-6">Discover your next favorite book from our vast collection.</p>
                 <a href="{% url 'bookstore:book_list' %}" class="btn btn-primary">Browse Books</a>
             </div>
@@ -14,9 +14,9 @@
     
     
     <!-- Featured Books Carousel -->
-<h2 class="text-2xl font-bold mb-6 ml-12">Featured Books</h2>
+<h2 class="text-2xl font-bold mb-6 ml-12">Recommended Books</h2>
 <div class="carousel carousel-center rounded-box w-full space-x-4 p-4 mb-12">
-    {% for book in featured_books %}
+    {% for book in recommended_books %}
         <div class="carousel-item w-72">
             <div class="card bg-base-100 shadow-xl w-64">
                 <figure>
@@ -25,8 +25,10 @@
                 <div class="card-body">
                     <h2 class="card-title">{{ book.title }}</h2>
                     <p class="text-sm text-gray-600">Genre: {{ book.genre.name | title }}</p>
-                    <p class="text-lg font-bold">${{ book.price }}</p>
-                    <div class="card-actions justify-end">
+                    <div class="mb-6">
+                    <p class="text-lg font-bold">{{ book.price }} ฿</p>
+                    </div>    
+                    <div class="card-actions justify-end mr-8">
                         <a href="{% url 'bookstore:book_detail' book.id %}" class="btn btn-primary">View Details</a>
                     </div>
                 </div>
@@ -34,21 +36,22 @@
         </div>
     {% endfor %}
 </div>
-
-<!-- Top Selling Books Carousel -->
-<h2 class="text-2xl font-bold mb-6 ml-12">Top 10 Selling Books</h2>
+    
+<h2 class="text-2xl font-bold mb-6 ml-12">Best Selling Books</h2>
 <div class="carousel carousel-center rounded-box w-full space-x-4 p-4">
-    {% for book in top_books %}
+    {% for book in best_sell_books %}
         <div class="carousel-item w-72">
             <div class="card bg-base-100 shadow-xl w-64">
                 <figure>
                     <img src="{{ book.get_image_url }}" alt="{{ book.title }}" class="rounded-box w-52 object-cover" />
                 </figure>
-                <div class="card-body p-2">
+                <div class="card-body">
                     <h2 class="card-title">{{ book.title }}</h2>
                     <p class="text-sm text-gray-600">Genre: {{ book.genre.name | title }}</p>
-                    <p class="text-lg font-bold">${{ book.price }}</p>
-                    <div class="card-actions justify-end">
+                    <div class="mb-6">
+                        <p class="text-lg font-bold">{{ book.price }} ฿</p>
+                    </div>
+                    <div class="card-actions justify-end mr-8">
                         <a href="{% url 'bookstore:book_detail' book.id %}" class="btn btn-primary">View Details</a>
                     </div>
                 </div>
