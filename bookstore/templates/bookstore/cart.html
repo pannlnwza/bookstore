@@ -29,7 +29,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td>{{ item.book.price_including_tax }}</td>
+                        <td>{{ item.book.price }} ฿</td>
                         <td>
                             <form id="update-quantity-{{ item.id }}" method="post"
                                   action="{% url 'bookstore:update_quantity' %}"
@@ -42,7 +42,7 @@
                                 <button type="submit" class="btn btn-ghost btn-sm">Update</button>
                             </form>
                         </td>
-                        <td>{{ item.subtotal }}</td>
+                        <td>{{ item.subtotal }} ฿</td>
                         <td>
                             <form method="post" action="{% url 'bookstore:remove_cart' item.id %}">
                                 {% csrf_token %}
@@ -55,7 +55,7 @@
                 <tfoot>
                 <tr>
                     <td colspan="3" class="text-right font-bold">Total:</td>
-                    <td class="font-bold">{{ total }}</td>
+                    <td class="font-bold">{{ total }} ฿</td>
                     <td></td>
                 </tr>
                 </tfoot>
@@ -120,7 +120,7 @@
                             <div class="divider my-2"></div>
                             <div class="flex justify-between font-bold">
                                 <span>Total:</span>
-                                <span>{{ total }}</span>
+                                <span>{{ total }} ฿</span>
                             </div>
                         <button type="submit" form="checkout-form" class="btn btn-primary mt-6">
                                 Place Order
