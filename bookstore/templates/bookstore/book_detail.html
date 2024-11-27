@@ -76,13 +76,21 @@
         <h4 class="text-xl font-bold mb-2">Write a Review</h4>
         <form method="post" action="{% url 'bookstore:add_review' book.id %}">
             {% csrf_token %}
+            <!-- Star Rating -->
             <div class="form-control mb-4">
                 <label class="label">
                     <span class="label-text">Rating (1-5)</span>
                 </label>
-                <input type="number" name="rating" value="{{ form.rating.value|default_if_none:'' }}" min="1" max="5"
-                       class="input input-bordered w-full" required />
+                <div class="rating rating-lg">
+                    <input type="radio" name="rating" value="1" class="mask mask-star-2" />
+                    <input type="radio" name="rating" value="2" class="mask mask-star-2" />
+                    <input type="radio" name="rating" value="3" class="mask mask-star-2" />
+                    <input type="radio" name="rating" value="4" class="mask mask-star-2" />
+                    <input type="radio" name="rating" value="5" class="mask mask-star-2" checked="checked" />
+                </div>
             </div>
+
+            <!-- Review Text -->
             <div class="form-control mb-4">
                 <label class="label">
                     <span class="label-text">Review</span>
@@ -90,8 +98,11 @@
                 <textarea name="review_message" rows="4" class="textarea textarea-bordered w-full"
                           placeholder="Write your review..." required>{{ form.review_message.value|default_if_none:'' }}</textarea>
             </div>
+
+            <!-- Submit Button -->
             <button type="submit" class="btn btn-primary">Submit Review</button>
-        </form>
+</form>
+
     {% else %}
         <p class="text-gray-500">You can only review books you have purchased.</p>
     {% endif %}
