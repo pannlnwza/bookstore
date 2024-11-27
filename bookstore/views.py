@@ -94,11 +94,21 @@ def book_detail(request, book_id):
     book = get_object_or_404(Book.objects.select_related('stock'), id=book_id)
     related_books = Book.objects.filter(genre=book.genre).exclude(id=book_id)[:4]
     reviews = book.reviews.select_related('customer').all()
+
+    # Check if the user has purchased this book
+    user_has_purchased = False
+    if request.user.is_authenticated:
+        customer = Customer.objects.filter(user=request.user).first()
+        if customer:
+            user_has_purchased = OrderItem.objects.filter(order__customer=customer, book=book).exists()
+
     return render(request, 'bookstore/book_detail.html', {
         'book': book,
         'related_books': related_books,
         'reviews': reviews,
+        'user_has_purchased': user_has_purchased,
     })
+
 
 @login_required
 def place_order(request):
@@ -425,10 +435,22 @@ def delete_book(request, book_id):
     return redirect('bookstore:home')
 
 
+from django.db.models import Q
+
 @login_required
 def add_review(request, book_id):
     book = get_object_or_404(Book, id=book_id)
     customer = get_object_or_404(Customer, user=request.user)
+
+    # Check if the user has ordered this book
+    has_ordered_book = OrderItem.objects.filter(
+        order__customer=customer,
+        book=book
+    ).exists()
+
+    if not has_ordered_book:
+        messages.error(request, "You can only review books you have purchased.")
+        return redirect('bookstore:book_detail', book_id=book_id)
 
     # Check if the user already reviewed this book
     existing_review = Review.objects.filter(customer=customer, book=book).first()
@@ -446,6 +468,7 @@ def add_review(request, book_id):
         form = ReviewForm(instance=existing_review)  # Pre-fill if exists
 
     return render(request, 'bookstore/add_review.html', {'form': form, 'book': book})
+
 
 @login_required
 def delete_review(request, review_id):

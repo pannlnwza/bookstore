@@ -72,25 +72,29 @@
     </div>
 
     <!-- Add/Edit Review Form -->
-    <h4 class="text-xl font-bold mb-2">Write a Review</h4>
-    <form method="post" action="{% url 'bookstore:add_review' book.id %}">
-        {% csrf_token %}
-        <div class="form-control mb-4">
-            <label class="label">
-                <span class="label-text">Rating (1-5)</span>
-            </label>
-            <input type="number" name="rating" value="{{ form.rating.value|default_if_none:'' }}" min="1" max="5"
-                   class="input input-bordered w-full" required />
-        </div>
-        <div class="form-control mb-4">
-            <label class="label">
-                <span class="label-text">Review</span>
-            </label>
-            <textarea name="review_message" rows="4" class="textarea textarea-bordered w-full"
-                      placeholder="Write your review..." required>{{ form.review_message.value|default_if_none:'' }}</textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit Review</button>
-    </form>
+    {% if user_has_purchased %}
+        <h4 class="text-xl font-bold mb-2">Write a Review</h4>
+        <form method="post" action="{% url 'bookstore:add_review' book.id %}">
+            {% csrf_token %}
+            <div class="form-control mb-4">
+                <label class="label">
+                    <span class="label-text">Rating (1-5)</span>
+                </label>
+                <input type="number" name="rating" value="{{ form.rating.value|default_if_none:'' }}" min="1" max="5"
+                       class="input input-bordered w-full" required />
+            </div>
+            <div class="form-control mb-4">
+                <label class="label">
+                    <span class="label-text">Review</span>
+                </label>
+                <textarea name="review_message" rows="4" class="textarea textarea-bordered w-full"
+                          placeholder="Write your review..." required>{{ form.review_message.value|default_if_none:'' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+    {% else %}
+        <p class="text-gray-500">You can only review books you have purchased.</p>
+    {% endif %}
 </div>
 
 <div class="divider my-8">Related Books</div>
@@ -118,4 +122,3 @@
     {% endfor %}
 </div>
 {% endblock %}
-
