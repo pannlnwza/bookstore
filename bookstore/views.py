@@ -35,7 +35,8 @@ class HomeView(generic.TemplateView):
 def book_list(request):
     selected_genres = request.GET.getlist('genres')
     search_query = request.GET.get('search', '')
-    max_price = request.GET.get('max_price')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price', '')
     sort_by = request.GET.get('sort_by', 'popularity')
 
     books = Book.objects.select_related('genre').prefetch_related('stock')
@@ -46,10 +47,19 @@ def book_list(request):
     if search_query:
         books = books.filter(title__icontains=search_query)
 
-    if max_price:
+    if max_price or min_price:
         try:
-            max_price = float(max_price)
-            books = books.filter(price__lte=max_price)
+            if max_price and min_price:
+                max_price = float(max_price)
+                min_price = float(min_price)
+                books = books.filter(price__gte=min_price, price__lte=max_price)
+            elif min_price:
+                min_price = float(min_price)
+                books = books.filter(price__gte=min_price)
+                # Apply maximum price filter if max_price is valid
+            elif max_price:
+                max_price = float(max_price)
+                books = books.filter(price__lte=max_price)
         except ValueError:
             pass
 
@@ -84,6 +94,7 @@ def book_list(request):
         'genres': genres,
         'selected_genres': selected_genres,
         'search_query': search_query,
+        'min_price': min_price,
         'max_price': max_price,
         'sort_by': sort_by,
     })
