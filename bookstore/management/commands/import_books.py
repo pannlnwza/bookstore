@@ -4,8 +4,9 @@ from django.core.management.base import BaseCommand
 from bookstore.models import Book, Genre, Stock
 from django.conf import settings
 
+
 class Command(BaseCommand):
-    help = 'Imports JSON files from the json folder into the Book, Category, and Stock models'
+    help = 'Imports JSON files from the json folder into the Book, Genre, and Stock models'
 
     def handle(self, *args, **kwargs):
         json_folder = os.path.join(settings.BASE_DIR, 'bookstore', 'data', 'json')
@@ -16,26 +17,26 @@ class Command(BaseCommand):
                 self.import_json_file(file_path)
 
     def import_json_file(self, file_path):
-        # Open and read the JSON file
+        conversion_rate = 43.53  # GBP to THB exchange rate
+
         with open(file_path, 'r') as f:
             data = json.load(f)
 
-        # Loop through the data and create Book objects
         for item in data:
-            # Use get_or_create() for Category to avoid duplicates
             category, created = Genre.objects.get_or_create(name=item.get('category'))
 
-            # Convert the price (remove '£' symbol and convert to float)
             price_including_tax = item.get('price_including_tax')
             if price_including_tax:
-                price_including_tax = float(price_including_tax.replace('£', '').strip())
+                price_including_tax_gbp = float(price_including_tax.replace('£', '').strip())
+                price_including_tax_thb = round(price_including_tax_gbp * conversion_rate)
+            else:
+                price_including_tax_thb = 0.0
 
-            # Create the Book object and save it in one step
             book = Book.objects.create(
                 product_page_url=item.get('product_page_url'),
                 universal_product_code=item.get('universal_product_code'),
                 title=item.get('title'),
-                price=price_including_tax,
+                price=price_including_tax_thb,
                 product_description=item.get('product_description'),
                 genre=category,
                 review_rating=item.get('review_rating'),

@@ -34,16 +34,15 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ item.price_at_time }} Baht</td>
                                     <td>{{ item.quantity }}</td>
-                                    <td>{{ item.price_at_time }} Baht</td>
+                                    <td>{{ item.price_at_time }} ฿</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <td colspan="3" class="text-right font-bold">Total:</td>
-                                    <td class="font-bold">{{ order.total_amount }} Baht</td>
+                                    <td class="font-bold">{{ order.total_amount }} ฿</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -76,9 +75,9 @@
                 <div class="card-body">
                     <h2 class="card-title">Payment Information</h2>
                     <div class="space-y-2">
-                        <p><strong>Method:</strong>{{ order.payment.payment_method }}</p>
-                        <p><strong>Date:</strong>{{ order.payment.payment_date|date:"F j, Y" }}</p>
-                        <p><strong>Amount:</strong>{{ order.payment.amount }} Baht</p>
+                        <p><strong>Method:</strong> {{ order.payment.payment_method }}</p>
+                        <p><strong>Date:</strong> {{ order.payment.payment_date|date:"F j, Y" }}</p>
+                        <p><strong>Amount:</strong> {{ order.payment.amount }} ฿</p>
                     </div>
                 </div>
             </div>
