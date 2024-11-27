@@ -65,7 +65,7 @@
                 <div tabindex="0" role="button" class="btn m-1">
                     Price Range
                     {% if request.GET.min_price or request.GET.max_price %}
-                        : {{ request.GET.min_price|default:'0' }} Baht - {{ request.GET.max_price|default:'∞' }} Baht
+                        : {{ request.GET.min_price|default:'0' }} ฿ - {{ request.GET.max_price|default:'∞' }} ฿
                     {% endif %}
                 </div>
                 <div tabindex="0" class="dropdown-content z-[1] card card-compact p-4 shadow bg-base-100">
@@ -186,7 +186,7 @@
                     <td>{{ book.genre.name | title }}</td>
 
                     <!-- Display book price -->
-                    <td>{{ book.price|floatformat:2 }} Baht</td>
+                    <td>{{ book.price|floatformat:2 }} ฿</td>
 
                     <!-- Form for updating stock -->
                     <td>

@@ -389,6 +389,8 @@ class OrderListView(LoginRequiredMixin, generic.TemplateView):
 
         return context
 
+
+
 class OrderDetailView(LoginRequiredMixin, generic.TemplateView):
     model = Order
     template_name = 'bookstore/orders/order_detail.html'
