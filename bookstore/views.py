@@ -24,9 +24,14 @@ class HomeView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['featured_books'] = Book.objects.select_related('stock').all()[:10]
-        context['top_books'] = Book.objects.select_related('genre').order_by('-sales_count')[:10]
+        context['recommended_books'] =(Book.objects.select_related('genre')
+                                       .annotate(review_count=Count('reviews'))
+                                       .order_by('-review_count')[:10])
+        context['best_sell_books'] = (Book.objects.select_related('genre')
+                                      .annotate(total_sales=Sum('order_items__quantity'))
+                                      .order_by('-total_sales')[:10])
         context['genre'] = Genre.objects.all()
+        context['order_items'] = OrderItem.objects.all()
         return context
 
 
