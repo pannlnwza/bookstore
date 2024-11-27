@@ -4,14 +4,16 @@ from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 
-from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Customer
+from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Customer, Review
 from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib import messages
-from bookstore.forms import SignUpForm
+from bookstore.forms import SignUpForm, ReviewForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views import generic
+
+
 
 
 class HomeView(generic.TemplateView):
@@ -91,9 +93,11 @@ def book_list(request):
 def book_detail(request, book_id):
     book = get_object_or_404(Book.objects.select_related('stock'), id=book_id)
     related_books = Book.objects.filter(genre=book.genre).exclude(id=book_id)[:4]
+    reviews = book.reviews.select_related('customer').all()
     return render(request, 'bookstore/book_detail.html', {
         'book': book,
-        'related_books': related_books
+        'related_books': related_books,
+        'reviews': reviews,
     })
 
 @login_required
@@ -424,3 +428,33 @@ def delete_book(request, book_id):
 
     messages.error(request, "You are not authorized to view this page.")
     return redirect('bookstore:home')
+
+
+@login_required
+def add_review(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    customer = get_object_or_404(Customer, user=request.user)
+
+    # Check if the user already reviewed this book
+    existing_review = Review.objects.filter(customer=customer, book=book).first()
+
+    if request.method == 'POST':
+        form = ReviewForm(request.POST, instance=existing_review)  # Edit if exists
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.customer = customer
+            review.book = book
+            review.save()
+            messages.success(request, "Your review has been submitted.")
+            return redirect('bookstore:book_detail', book_id=book_id)
+    else:
+        form = ReviewForm(instance=existing_review)  # Pre-fill if exists
+
+    return render(request, 'bookstore/add_review.html', {'form': form, 'book': book})
+
+@login_required
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id, customer__user=request.user)
+    review.delete()
+    messages.success(request, "Your review has been deleted.")
+    return redirect('bookstore:book_detail', book_id=review.book.id)

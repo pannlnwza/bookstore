@@ -1,0 +1,10 @@
+{% extends "bookstore/base.html" %}
+{% block content %}
+<h2>Write a Review for {{ book.title }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Review</button>
+</form>
+<a href="{% url 'bookstore:book_detail' book.id %}">Back to Book</a>
+{% endblock %}

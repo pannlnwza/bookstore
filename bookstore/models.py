@@ -18,6 +18,13 @@ class Book(models.Model):
     review_rating = models.CharField(max_length=50)
     image_url = models.URLField()
 
+    @property
+    def average_rating(self):
+        reviews = self.reviews.all()
+        if reviews.exists():
+            return round(reviews.aggregate(models.Avg('rating'))['rating__avg'], 1)
+        return None
+
     def __str__(self):
         return self.title
 

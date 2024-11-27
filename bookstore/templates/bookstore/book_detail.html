@@ -20,6 +20,16 @@
                 <div class="stat-title">Stock</div>
                 <div class="stat-value text-lg">{{ book.stock.quantity_in_stock }}</div>
             </div>
+            <div class="stat">
+                <div class="stat-title">Average Rating</div>
+                <div class="stat-value text-lg">
+                    {% if book.average_rating %}
+                        {{ book.average_rating }} / 5
+                    {% else %}
+                        No ratings yet
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
         <!-- Add to Cart Form -->
@@ -35,6 +45,52 @@
             <button type="submit" class="btn btn-primary">Add to Cart</button>
         </form>
     </div>
+</div>
+
+<div class="divider my-8">Reviews</div>
+
+<!-- Review Section -->
+<div class="reviews">
+    <h3 class="text-2xl font-bold mb-4">Customer Reviews</h3>
+    <div class="mb-6">
+        {% if reviews %}
+            <ul>
+                {% for review in reviews %}
+                    <li class="mb-4">
+                        <p class="text-lg"><strong>{{ review.customer.first_name }}</strong> rated it {{ review.rating }} / 5</p>
+                        <p class="text-sm text-gray-600">{{ review.created_at|date:"F j, Y" }}</p>
+                        <p class="text-md">{{ review.review_message }}</p>
+                        {% if review.customer.user == request.user %}
+                            <a href="{% url 'bookstore:delete_review' review.id %}" class="text-red-500">Delete</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-md">No reviews yet. Be the first to review!</p>
+        {% endif %}
+    </div>
+
+    <!-- Add/Edit Review Form -->
+    <h4 class="text-xl font-bold mb-2">Write a Review</h4>
+    <form method="post" action="{% url 'bookstore:add_review' book.id %}">
+        {% csrf_token %}
+        <div class="form-control mb-4">
+            <label class="label">
+                <span class="label-text">Rating (1-5)</span>
+            </label>
+            <input type="number" name="rating" value="{{ form.rating.value|default_if_none:'' }}" min="1" max="5"
+                   class="input input-bordered w-full" required />
+        </div>
+        <div class="form-control mb-4">
+            <label class="label">
+                <span class="label-text">Review</span>
+            </label>
+            <textarea name="review_message" rows="4" class="textarea textarea-bordered w-full"
+                      placeholder="Write your review..." required>{{ form.review_message.value|default_if_none:'' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
 </div>
 
 <div class="divider my-8">Related Books</div>
@@ -61,5 +117,5 @@
     </div>
     {% endfor %}
 </div>
-
 {% endblock %}
+
