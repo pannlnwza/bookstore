@@ -4,31 +4,189 @@
     <div class="container mx-auto mt-8">
         <h1 class="text-3xl font-semibold mb-6">Stock Management</h1>
 
-        <div class="mb-4">
-            <a href="{% url 'bookstore:add' %}" class="btn btn-primary">Add New Book</a>
+        <!-- Filters Section -->
+        <div class="mb-6 flex flex-wrap gap-1 items-center">
+            <!-- Search by Title -->
+            <form method="GET" class="join">
+                <input type="text" name="search" placeholder="Search by Title"
+                       class="input input-bordered join-item"
+                       value="{{ request.GET.search }}"/>
+                <button type="submit" class="btn join-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                        <path fill-rule="evenodd"
+                              d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z"
+                              clip-rule="evenodd"/>
+                    </svg>
+
+                </button>
+            </form>
+
+            <!-- Genre Filter Dropdown with Checkboxes -->
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn m-1">
+                    Genres
+                    {% with selected_genres=request.GET.getlist %}
+                        {% if selected_genres.genres %}
+                            : {{ selected_genres.genres|join:", " }}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div tabindex="0" class="dropdown-content z-[1] card card-compact shadow bg-base-100 w-72">
+                    <form method="GET" class="card-body flex flex-col">
+                        {% if request.GET.search %}
+                            <input type="hidden" name="search" value="{{ request.GET.search }}">
+                        {% endif %}
+
+                        <div class="form-control overflow-y-auto max-h-[300px] pr-2">
+                            {% for genre in genres %}
+                                <label class="label cursor-pointer">
+                                    <span class="label-text">{{ genre.name|title }}</span>
+                                    <input type="checkbox"
+                                           name="genres"
+                                           value="{{ genre.name }}"
+                                           class="checkbox checkbox-primary"
+                                            {% with selected_genres=request.GET.getlist %}
+                                           {% if genre.name in selected_genres.genres %}checked{% endif %}
+                                            {% endwith %}
+                                    />
+                                </label>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-control mt-4 sticky bottom-0 bg-base-100 pt-2">
+                            <button type="submit" class="btn btn-primary">Apply Genre Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Price Range Filter -->
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn m-1">
+                    Price Range
+                    {% if request.GET.min_price or request.GET.max_price %}
+                        : ${{ request.GET.min_price|default:'0' }} - ${{ request.GET.max_price|default:'∞' }}
+                    {% endif %}
+                </div>
+                <div tabindex="0" class="dropdown-content z-[1] card card-compact p-4 shadow bg-base-100">
+                    <form method="GET" class="card-body space-y-4">
+                        {% if request.GET.search %}
+                            <input type="hidden" name="search" value="{{ request.GET.search }}">
+                        {% endif %}
+                        {% with selected_genres=request.GET.getlist %}
+                            {% for genre in selected_genres.genres %}
+                                <input type="hidden" name="genres" value="{{ genre }}">
+                            {% endfor %}
+                        {% endwith %}
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Minimum Price</span>
+                            </label>
+                            <input type="number" name="min_price" placeholder="Min Price"
+                                   class="input input-bordered"
+                                   value="{{ request.GET.min_price }}"
+                                   min="0" step="0.01"/>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Maximum Price</span>
+                            </label>
+                            <input type="number" name="max_price" placeholder="Max Price"
+                                   class="input input-bordered"
+                                   value="{{ request.GET.max_price }}"
+                                   min="0" step="0.01"/>
+                        </div>
+                        <div class="form-control mt-4">
+                            <button type="submit" class="btn btn-primary">Apply Price Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Stock Range Filter -->
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn m-1">
+                    Stock Range
+                    {% if request.GET.min_stock or request.GET.max_stock %}
+                        : {{ request.GET.min_stock|default:'0' }} - {{ request.GET.max_stock|default:'∞' }}
+                    {% endif %}
+                </div>
+                <div tabindex="0" class="dropdown-content z-[1] card card-compact p-4 shadow bg-base-100">
+                    <form method="GET" class="card-body space-y-4">
+                        {% if request.GET.search %}
+                            <input type="hidden" name="search" value="{{ request.GET.search }}">
+                        {% endif %}
+                        {% with selected_genres=request.GET.getlist %}
+                            {% for genre in selected_genres.genres %}
+                                <input type="hidden" name="genres" value="{{ genre }}">
+                            {% endfor %}
+                        {% endwith %}
+                        {% if request.GET.min_price %}
+                            <input type="hidden" name="min_price" value="{{ request.GET.min_price }}">
+                        {% endif %}
+                        {% if request.GET.max_price %}
+                            <input type="hidden" name="max_price" value="{{ request.GET.max_price }}">
+                        {% endif %}
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Minimum Stock</span>
+                            </label>
+                            <input type="number" name="min_stock" placeholder="Min Stock"
+                                   class="input input-bordered"
+                                   value="{{ request.GET.min_stock }}"
+                                   min="0"/>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Maximum Stock</span>
+                            </label>
+                            <input type="number" name="max_stock" placeholder="Max Stock"
+                                   class="input input-bordered"
+                                   value="{{ request.GET.max_stock }}"
+                                   min="0"/>
+                        </div>
+                        <div class="form-control mt-4">
+                            <button type="submit" class="btn btn-primary">Apply Stock Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Clear Filters Button -->
+            <a href="{% url 'bookstore:stock_management' %}" class="btn btn-ghost">
+                Clear Filters
+            </a>
+
+            <!-- Add New Book Button -->
+            <a href="{% url 'bookstore:add' %}" class="btn btn-primary ml-auto">Add New Book</a>
         </div>
 
+        <!-- Existing Table Content -->
         <table class="table w-full table-zebra">
             <thead>
             <tr>
                 <th>Image</th>
                 <th>Title</th>
                 <th>Genre</th>
+                <th>Price</th>
                 <th>Stock</th>
                 <th>Actions</th>
             </tr>
             </thead>
             <tbody>
-            {% for book in books %}
+            {% for book in page_obj %}
                 <tr>
                     <!-- Display book image -->
-                    <td><img src="{{ book.image_url }}" alt="{{ book.title }}" class="w-16 object-cover"></td>
+                    <td><img src="{{ book.get_image_url }}" alt="{{ book.title }}" class="w-16 object-cover"></td>
 
                     <!-- Display book title -->
                     <td>{{ book.title }}</td>
 
                     <!-- Display book genre -->
                     <td>{{ book.genre.name | title }}</td>
+
+                    <!-- Display book price -->
+                    <td>${{ book.price|floatformat:2 }}</td>
 
                     <!-- Form for updating stock -->
                     <td>
@@ -45,16 +203,17 @@
                     <!-- Actions: Edit and Delete -->
                     <td>
                         <div class="flex items-center space-x-2">
-                            <a href="{% url 'bookstore:edit_book' book.id %}" class="btn btn-warning btn-square text-white">
+                            <a href="{% url 'bookstore:edit_book' book.id %}"
+                               class="btn btn-warning btn-square text-white">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                                      class="size-6">
                                     <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32l8.4-8.4Z"/>
                                     <path d="M5.25 5.25a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3V13.5a.75.75 0 0 0-1.5 0v5.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5h5.25a.75.75 0 0 0 0-1.5H5.25Z"/>
                                 </svg>
-
                             </a>
-                            <a href="{% url 'bookstore:delete_book' book.id %}" class="btn btn-error btn-square text-white"
-                             onclick="return confirm('Do you really want to delete this book?')">
+                            <a href="{% url 'bookstore:delete_book' book.id %}"
+                               class="btn btn-error btn-square text-white"
+                               onclick="return confirm('Do you really want to delete this book?')">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                                      class="size-6">
                                     <path fill-rule="evenodd"
@@ -68,5 +227,30 @@
             {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center mt-6">
+        <div class="btn-group no-animation">
+            {% if page_obj.has_previous %}
+                <a href="?{{ request.GET.urlencode }}&page=1" class="btn">« First</a>
+                <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" class="btn">Previous</a>
+            {% else %}
+                <span class="btn btn-disabled">« First</span>
+                <span class="btn btn-disabled">Previous</span>
+            {% endif %}
+
+            <span class="btn btn-ghost">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" class="btn">Next</a>
+                <a href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}" class="btn">Last »</a>
+            {% else %}
+                <span class="btn btn-disabled">Next</span>
+                <span class="btn btn-disabled">Last »</span>
+            {% endif %}
+        </div>
     </div>
 {% endblock %}
