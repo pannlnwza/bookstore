@@ -19,6 +19,7 @@ class Book(models.Model):
     review_rating = models.CharField(max_length=50)
     image_url = models.URLField(blank=True, null=True)
     image = models.ImageField(upload_to='book_images/', blank=True, null=True)
+    sales_count = models.PositiveIntegerField(default=0)
 
 
     def get_image_url(self):
