@@ -16,8 +16,6 @@ from django.views import generic
 from django.db import IntegrityError
 
 
-
-
 class HomeView(generic.TemplateView):
     template_name = 'bookstore/home.html'
 
