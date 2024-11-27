@@ -320,7 +320,7 @@ class OrderListView(LoginRequiredMixin, generic.TemplateView):
         # Filter by Order ID
         order_id = self.request.GET.get('order_id', '').strip()
         if order_id:
-            queryset = orders.filter(id=order_id)
+            orders = orders.filter(id=order_id)
 
         # Filter by Date Range
         start_date = self.request.GET.get('start_date')
@@ -328,11 +328,11 @@ class OrderListView(LoginRequiredMixin, generic.TemplateView):
 
         if start_date:
             start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-            queryset = orders.filter(order_date__gte=start_date)
+            orders = orders.filter(order_date__gte=start_date)
 
         if end_date:
             end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-            queryset = orders.filter(order_date__lte=end_date)
+            orders = orders.filter(order_date__lte=end_date)
 
         # Handle pagination
         paginator = Paginator(orders, 5)  # Show 5 orders per page
