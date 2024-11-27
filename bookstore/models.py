@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.template.defaultfilters import default
+
 
 class Genre(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -9,14 +11,24 @@ class Genre(models.Model):
 
 
 class Book(models.Model):
-    product_page_url = models.URLField()
+    product_page_url = models.URLField(blank=True, null=True)
     universal_product_code = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
-    price = models.CharField(max_length=255)
+    price = models.FloatField(default=0)
     product_description = models.TextField()
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
     review_rating = models.CharField(max_length=50)
-    image_url = models.URLField()
+    image_url = models.URLField(blank=True, null=True)
+    image = models.ImageField(upload_to='book_images/', blank=True, null=True)
+
+    def get_image_url(self):
+        """
+        Returns the uploaded image URL if available; otherwise, returns the image_url.
+        """
+        if self.image:
+            return self.image.url
+        return self.image_url
+
 
     @property
     def average_rating(self):
@@ -77,7 +89,7 @@ class Payment(models.Model):
 
 class Stock(models.Model):
     book = models.OneToOneField(Book, on_delete=models.CASCADE, related_name="stock")
-    quantity_in_stock = models.PositiveIntegerField()
+    quantity_in_stock = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Stock for {self.book.title}: {self.quantity_in_stock}"
