@@ -565,7 +565,6 @@ def add_review(request, book_id):
             if form.is_valid():
                 review = form.save(commit=False)
                 review.user = request.user
-                review.name = form.cleaned_data.get('name')
                 review.book = book
                 review.save()
                 messages.success(request, "Your review has been submitted.")

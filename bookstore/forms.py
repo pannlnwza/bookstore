@@ -29,9 +29,8 @@ class SignUpForm(forms.ModelForm):
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
-        fields = ['name', 'review_message', 'rating']
+        fields = ['review_message', 'rating']
         widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Name or alias', 'max_length': 50}),
             'review_message': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Write your review...'}),
             'rating': forms.NumberInput(attrs={'min': 1, 'max': 5}),
         }
