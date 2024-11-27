@@ -25,6 +25,7 @@
                             <tbody>
                                 {% for item in order.order_items.all %}
                                 <tr>
+                                <td><img src="{{ item.book.get_image_url }}" alt="{{ book.title }}" class="w-16 object-cover"></td>
                                     <td>
                                         <div class="flex items-center space-x-3">
                                             <div>

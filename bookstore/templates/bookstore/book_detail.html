@@ -4,7 +4,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
     <!-- Book Image -->
     <div class="w-full flex justify-center">
-        <img src="{{ book.image_url }}" alt="{{ book.title }}" class="w-80 object-cover rounded-lg">
+        <img src="{{ book.get_image_url }}" alt="{{ book.title }}" class="w-80 object-cover rounded-lg">
     </div>
 
     <!-- Book Info -->
@@ -87,7 +87,7 @@
     </div>
 </div>
 
-
+<div>
     <!-- Add/Edit Review Form -->
     {% if user_has_purchased %}
         <h4 class="text-xl font-bold mb-2">Write a Review</h4>
