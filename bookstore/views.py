@@ -1,6 +1,9 @@
+from datetime import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Sum, Avg, Count
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 
@@ -29,35 +32,54 @@ class HomeView(generic.TemplateView):
 
 def book_list(request):
     # Retrieve and validate query parameters
-    genre_id = request.GET.get('genre')
-    search_query = request.GET.get('search', '')
-    max_price = request.GET.get('max_price')  # Retrieve max_price from query parameters
-    books = Book.objects.select_related('genre').prefetch_related('stock')  # Include related stock and genre data
+    selected_genres = request.GET.getlist('genres')  # Multi-select genres
+    genre_id = request.GET.get('genre')  # Single genre selection
+    search_query = request.GET.get('search', '')  # Search term
+    max_price = request.GET.get('max_price')  # Max price filter
+    sort_by = request.GET.get('sort_by', 'popularity')  # Sorting option with default
+
+    # Retrieve books with necessary related data
+    books = Book.objects.select_related('genre').prefetch_related('stock')
 
     # Filter by genre
-    if genre_id and genre_id.isdigit():
-        books = books.filter(genre_id=int(genre_id))
+    if selected_genres:
+        books = books.filter(genre__name__in=selected_genres)
 
-    # Perform a search for books matching the query
+    if genre_id:
+        books = books.filter(genre__id=genre_id)
+
+    # Perform search for books matching the query
     if search_query:
         books = books.filter(title__icontains=search_query)
 
-    # Filter by max price if provided and valid
+    # Filter by max price
     if max_price:
         try:
             max_price = float(max_price)
-            books = books.filter(price__lte=max_price)  # Filter books based on price
+            books = books.filter(price__lte=max_price)
         except ValueError:
-            pass  # Ignore invalid max_price input
+            pass  # Invalid price input, ignore filter
+
+    # Apply sorting based on the selected option
+    if sort_by == 'popularity':
+        books = books.annotate(total_sales=Sum('order_items__quantity')).order_by('-total_sales')
+    elif sort_by == 'rating':
+        books = books.annotate(avg_rating=Avg('reviews__rating')).order_by('-avg_rating')
+    elif sort_by == 'reviews':
+        books = books.annotate(review_count=Count('reviews')).order_by('-review_count')
+    elif sort_by == 'price_asc':
+        books = books.order_by('price')
+    elif sort_by == 'price_desc':
+        books = books.order_by('-price')
 
     # Separate books into in-stock and out-of-stock
     in_stock_books = books.filter(stock__quantity_in_stock__gt=0)
     out_of_stock_books = books.filter(stock__quantity_in_stock=0)
 
-    # Combine in-stock and out-of-stock books, ensuring in-stock comes first
+    # Combine in-stock and out-of-stock books, ensuring in-stock appears first
     books = in_stock_books | out_of_stock_books
 
-    # Get all genres for the filter dropdown
+    # Retrieve all genres for filtering
     genres = Genre.objects.all()
 
     # Paginate the books
@@ -76,10 +98,11 @@ def book_list(request):
         'page_obj': page_obj,
         'genres': genres,
         'current_genre': genre_id,
+        'selected_genres': selected_genres,
         'search_query': search_query,
         'max_price': max_price,
+        'sort_by': sort_by,
     })
-
 
 
 def book_detail(request, book_id):
@@ -134,30 +157,20 @@ def place_order(request):
                 messages.error(request, "Please fill in all required fields.")
                 return redirect('bookstore:cart')
 
-            # Check or create customer record
-            customer = Customer.objects.filter(user=request.user).first()
-            if not customer:
-                customer = Customer.objects.create(
-                    user=request.user,
-                    first_name=full_name.split()[0],
-                    last_name=" ".join(full_name.split()[1:]),
-                    email=request.user.email,
-                    phone_number=phone,
-                    address=address
-                )
-            else:
-                # Update customer information
-                customer.first_name = full_name.split()[0]
-                customer.last_name = " ".join(full_name.split()[1:])
-                customer.phone_number = phone
-                customer.address = address
-                customer.save()
+            customer = Customer.objects.create(
+                user=request.user,
+                first_name=full_name.split()[0],
+                last_name=" ".join(full_name.split()[1:]),
+                email=request.user.email,
+                phone_number=phone,
+            )
+
 
             with transaction.atomic():
-                # Create order
                 order = Order.objects.create(
                     customer=customer,
-                    total_amount=cart.total
+                    total_amount=cart.total,
+                    address=address
                 )
 
                 # Create order items and update stock
@@ -315,20 +328,66 @@ def signup(request):
 
     return render(request, 'account/signup.html', {'form': form})
 
-class OrderListView(LoginRequiredMixin, generic.ListView):
-    model = Order
+class OrderListView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'bookstore/orders/order_list.html'
-    context_object_name = 'page_obj'
-    paginate_by = 10
 
-    def get_queryset(self):
-        try:
-            customer = Customer.objects.get(user=self.request.user)
-            return Order.objects.filter(customer=customer).order_by('-order_date')
-        except Customer.DoesNotExist:
-            # If no Customer exists, return an empty queryset
-            return Order.objects.none()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
+        # Annotate orders with item count
+        orders = (
+            Order.objects.filter(customer__user=self.request.user)
+            .annotate(item_count=Count('order_items'))  # Annotate with count of OrderItems
+            .order_by('-order_date')
+        )
+
+        # Return empty page if no orders
+        if not orders.exists():
+            context['page_obj'] = None
+            return context
+
+        # Filter by Order ID
+        order_id = self.request.GET.get('order_id', '').strip()
+        if order_id:
+            orders = orders.filter(id=order_id)
+
+        # Filter by Date Range
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            orders = orders.filter(order_date__gte=start_date)
+
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            orders = orders.filter(order_date__lte=end_date)
+
+        # Filter by number of items (min_items and max_items)
+        min_items = self.request.GET.get('min_items')
+        max_items = self.request.GET.get('max_items')
+
+        if min_items:
+            orders = orders.filter(item_count__gte=int(min_items))
+
+        if max_items:
+            orders = orders.filter(item_count__lte=int(max_items))
+
+        # Handle pagination
+        paginator = Paginator(orders, 5)  # Show 5 orders per page
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        # Pass context
+        context['page_obj'] = page_obj
+
+        # Add query string for pagination links
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']
+        context['query_string'] = query_params.urlencode()
+
+        return context
 
 class OrderDetailView(LoginRequiredMixin, generic.TemplateView):
     model = Order
