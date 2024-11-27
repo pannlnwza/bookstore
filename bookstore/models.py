@@ -42,17 +42,6 @@ class Book(models.Model):
             return round(reviews.aggregate(models.Avg('rating'))['rating__avg'], 1)
         return None
 
-    def update_sales_count(self):
-        self.sales_count = self.order_items.aggregate(total_sold=models.Sum('quantity'))['total_sold'] or 0
-        self.save()
-
-    @classmethod
-    def get_top_5_selling_books(cls):
-        """
-        Returns the top 5 selling books based on the total quantity sold.
-        """
-        return cls.objects.annotate(total_sold=models.Sum('order_items__quantity')).order_by('-total_sold')[:5]
-
     def __str__(self):
         return self.title
 
@@ -64,15 +53,6 @@ class Order(models.Model):
     address = models.TextField()
     full_name = models.TextField()
     phone = models.CharField(max_length=20, blank=True, null=True)
-
-    def complete_order(self):
-        """
-        Marks the order as complete and updates sales_count for each book in the order.
-        """
-        for item in self.order_items.all():
-            book = item.book
-            book.sales_count += item.quantity
-            book.save()
 
     def __str__(self):
         return f"Order #{self.id}"
