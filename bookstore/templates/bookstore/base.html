@@ -4,79 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Online Bookstore{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.0/dist/full.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.0/dist/full.css" rel="stylesheet" type="text/css"/>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    <div class="drawer">
-        <input id="my-drawer-3" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content flex flex-col">
-            <!-- Navbar -->
-            <div class="w-full navbar bg-base-300">
-                <div class="flex-none lg:hidden">
-                    <label for="my-drawer-3" class="btn btn-square btn-ghost">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </label>
-                </div>
-                <div class="flex-1 px-2 mx-2">
-                    <a href="{% url 'bookstore:home' %}" class="btn btn-ghost normal-case text-xl">Bookstore</a>
-                </div>
-{#                <div class="flex-none hidden lg:block">#}
-{#                    <ul class="menu menu-horizontal">#}
-{#                        <li><a href="{% url 'bookstore:book_list' %}">Books</a></li>#}
-{#                        <li><a href="{% url 'bookstore:cart' %}">Cart</a></li>#}
-{#                        {% if user.is_authenticated %}#}
-{#                            <li><a href="{% url 'bookstore:order_list' %}">My Orders</a></li>#}
-{#                            <li><a href="{% url 'bookstore:login' %}">Logout</a></li>#}
-{#                        {% else %}#}
-{#                            <li><a href="{% url 'bookstore:login' %}">Login</a></li>#}
-{#                        {% endif %}#}
-{#                    </ul>#}
-{#                </div>#}
-                
-                <div class="flex-none hidden lg:block">
-    <ul class="menu menu-horizontal">
-        <li><a href="{% url 'bookstore:book_list' %}">Books</a></li>
-        <li><a href="{% url 'bookstore:cart' %}">Cart</a></li>
-        <li><a href="{% url 'bookstore:order_list' %}">My Orders</a></li>
-        {% if user.is_authenticated %}
-    <div class="dropdown dropdown-end">
-        <button tabindex="0" class="btn btn-primary btn-sm">
-            {{ user.username }} <!-- Display the logged-in user's username -->
-        </button>
-        <ul tabindex="0" class="menu dropdown-content bg-base-100 rounded-box w-25 p-2 shadow">
-    <form action="{% url 'account_logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-error btn-sm w-full">
-            Logout
-        </button>
-    </form>
-</ul>
-
-    </div>
-{% else %}
-    <li><a href="{% url 'login' %}">Login</a></li>
-{% endif %}
-
-    </ul>
-</div>
-
-            
+<div class="drawer">
+    <input id="my-drawer-3" type="checkbox" class="drawer-toggle"/>
+    <div class="drawer-content flex flex-col">
+        <!-- Navbar -->
+        <div class="w-full navbar bg-base-300">
+            <div class="flex-none lg:hidden">
+                <label for="my-drawer-3" class="btn btn-square btn-ghost">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         class="inline-block w-6 h-6 stroke-current">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </label>
             </div>
-            <!-- Page content -->
-            <main class="container mx-auto px-4 py-8">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-success mb-4">
+            <div class="flex-1 px-2 mx-2">
+                <a href="{% url 'bookstore:home' %}" class="btn btn-ghost normal-case text-xl">Bookstore</a>
+            </div>
+            {#                <div class="flex-none hidden lg:block">#}
+            {#                    <ul class="menu menu-horizontal">#}
+            {#                        <li><a href="{% url 'bookstore:book_list' %}">Books</a></li>#}
+            {#                        <li><a href="{% url 'bookstore:cart' %}">Cart</a></li>#}
+            {#                        {% if user.is_authenticated %}#}
+            {#                            <li><a href="{% url 'bookstore:order_list' %}">My Orders</a></li>#}
+            {#                            <li><a href="{% url 'bookstore:login' %}">Logout</a></li>#}
+            {#                        {% else %}#}
+            {#                            <li><a href="{% url 'bookstore:login' %}">Login</a></li>#}
+            {#                        {% endif %}#}
+            {#                    </ul>#}
+            {#                </div>#}
+
+            <div class="flex-none hidden lg:block">
+                <ul class="menu menu-horizontal">
+                    <li><a href="{% url 'bookstore:book_list' %}">Books</a></li>
+                    <li><a href="{% url 'bookstore:stock_management' %}">Stocks</a></li>
+                    <li><a href="{% url 'bookstore:cart' %}">Cart</a></li>
+                    <li><a href="{% url 'bookstore:order_list' %}">My Orders</a></li>
+                    {% if user.is_authenticated %}
+                        <div class="dropdown dropdown-end">
+                            <button tabindex="0" class="btn btn-primary btn-sm">
+                                {{ user.username }} <!-- Display the logged-in user's username -->
+                            </button>
+                            <ul tabindex="0" class="menu dropdown-content bg-base-100 rounded-box w-25 p-2 shadow">
+                                <form action="{% url 'account_logout' %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-error btn-sm w-full">
+                                        Logout
+                                    </button>
+                                </form>
+                            </ul>
+
+                        </div>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Login</a></li>
+                    {% endif %}
+
+                </ul>
+            </div>
+
+
+        </div>
+        <!-- Page content -->
+        <main class="container mx-auto px-4 py-8">
+
+            {% block content %}{% endblock %}
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div id="toast-container" class="toast toast-end toast-bottom z-50">
+                    <div class="alert alert-success shadow-lg text-white">
+                        <div class="inline-flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6 mr-2"
+                                 fill="none"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                             <span>{{ message }}</span>
                         </div>
-                    {% endfor %}
-                {% endif %}
-                {% block content %}{% endblock %}
-            </main>
-        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            </div>
+
+            <style>
+                #toast-container {
+                    position: fixed;
+                    bottom: 1rem;
+                    right: 1rem;
+                    z-index: 9999;
+                }
+            </style>
+        </main>
     </div>
+</div>
 </body>
 </html>
