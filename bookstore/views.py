@@ -26,16 +26,17 @@ class HomeView(generic.TemplateView):
         return context
 
 
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from .models import Book, Genre, Stock
+
 def book_list(request):
     # Retrieve and validate query parameters
     genre_id = request.GET.get('genre')
     search_query = request.GET.get('search', '')
-    max_price = request.GET.get(
-        'max_price')  # Retrieve max_price from query parameters
-    books = Book.objects.select_related(
-        'stock')  # Include related stock data if necessary
+    max_price = request.GET.get('max_price')  # Retrieve max_price from query parameters
+    books = Book.objects.select_related('genre').prefetch_related('stock')  # Include related stock and genre data
 
-    # Validate and filter by genre
+    # Filter by genre
     if genre_id and genre_id.isdigit():
         books = books.filter(genre_id=int(genre_id))
 
@@ -46,23 +47,17 @@ def book_list(request):
     # Filter by max price if provided and valid
     if max_price:
         try:
-            max_price = float(max_price)  # Convert max_price to float
-            filtered_books = []
-
-            for book in books:
-                # Clean up the price by removing '$' and commas, then convert it to float
-                clean_price = book.price.replace('$', '').replace(',', '')
-                try:
-                    book_price = float(clean_price)  # Convert to float
-                    if book_price <= max_price:
-                        filtered_books.append(
-                            book)  # Add book to the filtered list if price is within the range
-                except ValueError:
-                    pass  # Ignore books with invalid price formats
-
-            books = filtered_books  # Update books with filtered results
+            max_price = float(max_price)
+            books = books.filter(price__lte=max_price)  # Filter books based on price
         except ValueError:
             pass  # Ignore invalid max_price input
+
+    # Separate books into in-stock and out-of-stock
+    in_stock_books = books.filter(stock__quantity_in_stock__gt=0)
+    out_of_stock_books = books.filter(stock__quantity_in_stock=0)
+
+    # Combine in-stock and out-of-stock books, ensuring in-stock comes first
+    books = in_stock_books | out_of_stock_books
 
     # Get all genres for the filter dropdown
     genres = Genre.objects.all()
@@ -74,10 +69,8 @@ def book_list(request):
     try:
         page_obj = paginator.get_page(page_number)
     except PageNotAnInteger:
-        # If the page is not an integer, show the first page
         page_obj = paginator.get_page(1)
     except EmptyPage:
-        # If the page is out of range, show the last page
         page_obj = paginator.get_page(paginator.num_pages)
 
     # Render the results with all necessary context
@@ -88,6 +81,7 @@ def book_list(request):
         'search_query': search_query,
         'max_price': max_price,
     })
+
 
 
 def book_detail(request, book_id):
