@@ -9,6 +9,10 @@
             <div class="card bg-base-100 shadow-xl">
                 <div class="card-body">
                     <h2 class="card-title">{{ review.book.title }}</h2>
+                    <figure class="px-10 pt-10">
+                    <!-- Use the actual image URL from the Book model -->
+                    <img src="{{ review.book.image_url }}" alt="{{ review.book.title }}" class="w-52 object-cover">
+                    </figure>
                     <p class="text-sm text-gray-600">{{ review.created_at|date:"F j, Y" }}</p>
                     <div class="rating rating-sm mb-2">
                         {% for i in "12345" %}

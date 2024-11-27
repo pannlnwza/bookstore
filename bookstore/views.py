@@ -4,7 +4,7 @@ from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 
-from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Customer, Review
+from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Customer, Review, Favorite
 from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
@@ -96,17 +96,20 @@ def book_detail(request, book_id):
     reviews = book.reviews.select_related('customer').all()
 
     # Check if the user has purchased this book
+    is_favorited = False
     user_has_purchased = False
     if request.user.is_authenticated:
         customer = Customer.objects.filter(user=request.user).first()
         if customer:
             user_has_purchased = OrderItem.objects.filter(order__customer=customer, book=book).exists()
+            is_favorited = Favorite.objects.filter(user=request.user, book=book).exists()
 
     return render(request, 'bookstore/book_detail.html', {
         'book': book,
         'related_books': related_books,
         'reviews': reviews,
         'user_has_purchased': user_has_purchased,
+        'is_favorited': is_favorited
     })
 
 
@@ -522,3 +525,39 @@ class MyReviewsView(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         # Filter reviews for the logged-in user
         return Review.objects.filter(customer__user=self.request.user).select_related('book').order_by('-created_at')
+
+
+@login_required
+def add_to_favorites(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    favorite, created = Favorite.objects.get_or_create(user=request.user, book=book)
+
+    if created:
+        messages.success(request, f"'{book.title}' has been added to your favorites.")
+    else:
+        messages.info(request, f"'{book.title}' is already in your favorites.")
+
+    return redirect('bookstore:book_detail', book_id=book_id)
+
+
+@login_required
+def remove_from_favorites(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    favorite = Favorite.objects.filter(user=request.user, book=book).first()
+
+    if favorite:
+        favorite.delete()
+        messages.success(request, f"'{book.title}' has been removed from your favorites.")
+    else:
+        messages.info(request, f"'{book.title}' was not in your favorites.")
+
+    return redirect('bookstore:book_detail', book_id=book_id)
+
+
+class FavoritesListView(LoginRequiredMixin, generic.ListView):
+    model = Favorite
+    template_name = 'bookstore/favorites_list.html'
+    context_object_name = 'favorites'
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user).select_related('book')
