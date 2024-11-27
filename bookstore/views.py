@@ -554,6 +554,7 @@ def add_review(request, book_id):
             if form.is_valid():
                 review = form.save(commit=False)
                 review.user = request.user
+                review.name = form.cleaned_data.get('name')
                 review.book = book
                 review.save()
                 messages.success(request, "Your review has been submitted.")
@@ -567,7 +568,6 @@ def add_review(request, book_id):
         messages.error(request, f"An error occurred: {str(e)}")
         return redirect('bookstore:book_detail', book_id=book_id)
 
-    # Fallback render for form errors or GET requests
     return render(request, 'bookstore/book_detail.html', {
         'form': form,
         'book': book,

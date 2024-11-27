@@ -71,7 +71,7 @@
                 {% for review in reviews %}
                     <li class="mb-4">
                         <div class="flex items-center mb-2">
-                        <p class="text-lg mr-2"><strong>{{ review.customer.first_name }}</strong></p>
+                        <p class="text-lg mr-2"><strong>{{ review.name }}</strong></p>
 
                             <!-- Star Rating Display -->
                             <div class="rating rating-sm">
@@ -102,41 +102,50 @@
 
 
 <div class="divider my-8">Leave a Review</div>
-    <!-- Add/Edit Review Form -->
-    {% if user_has_purchased %}
-        <h4 class="text-xl font-bold mb-2">Write a Review</h4>
-        <form method="post" action="{% url 'bookstore:add_review' book.id %}">
-            {% csrf_token %}
-            <!-- Star Rating -->
-            <div class="form-control mb-4">
-                <label class="label">
-                    <span class="label-text">Rating (1-5)</span>
-                </label>
-                <div class="rating rating-lg">
-                    <input type="radio" name="rating" value="1" class="mask mask-star-2 bg-orange-400"  checked="checked"/>
-                    <input type="radio" name="rating" value="2" class="mask mask-star-2 bg-orange-400" />
-                    <input type="radio" name="rating" value="3" class="mask mask-star-2 bg-orange-400" />
-                    <input type="radio" name="rating" value="4" class="mask mask-star-2 bg-orange-400" />
-                    <input type="radio" name="rating" value="5" class="mask mask-star-2 bg-orange-400" />
-                </div>
+<!-- Add/Edit Review Form -->
+{% if user_has_purchased %}
+    <h4 class="text-xl font-bold mb-2">Write a Review</h4>
+    <form method="post" action="{% url 'bookstore:add_review' book.id %}">
+        {% csrf_token %}
+
+        <!-- Star Rating -->
+        <div class="form-control mb-4">
+            <label class="label">
+                <span class="label-text">Rating (1-5)</span>
+            </label>
+            <div class="rating rating-lg">
+                <input type="radio" name="rating" value="1" class="mask mask-star-2 bg-orange-400"  checked="checked"/>
+                <input type="radio" name="rating" value="2" class="mask mask-star-2 bg-orange-400" />
+                <input type="radio" name="rating" value="3" class="mask mask-star-2 bg-orange-400" />
+                <input type="radio" name="rating" value="4" class="mask mask-star-2 bg-orange-400" />
+                <input type="radio" name="rating" value="5" class="mask mask-star-2 bg-orange-400" />
             </div>
+        </div>
 
-            <!-- Review Text -->
-            <div class="form-control mb-4">
-                <label class="label">
-                    <span class="label-text">Review</span>
-                </label>
-                <textarea name="review_message" rows="4" class="textarea textarea-bordered w-full"
-                          placeholder="Write your review..." required>{{ form.review_message.value|default_if_none:'' }}</textarea>
-            </div>
+        <!-- User's Name -->
+        <div class="form-control mb-4">
+            <label class="label">
+                <span class="label-text">Your Name</span>
+            </label>
+            <input type="text" name="name" class="input input-bordered w-full" placeholder="Your name or alias" value="{{ form.name.value|default_if_none:'Anonymous' }}">
+        </div>
 
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary">Submit Review</button>
-</form>
+        <!-- Review Text -->
+        <div class="form-control mb-4">
+            <label class="label">
+                <span class="label-text">Review</span>
+            </label>
+            <textarea name="review_message" rows="4" class="textarea textarea-bordered w-full" placeholder="Write your review..." required>{{ form.review_message.value|default_if_none:'' }}</textarea>
+        </div>
 
-    {% else %}
-        <p class="text-gray-500">You can only review books you have purchased.</p>
-    {% endif %}
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
+
+{% else %}
+    <p class="text-gray-500">You can only review books you have purchased.</p>
+{% endif %}
+
 
 <div class="divider my-8">Related Books</div>
 
