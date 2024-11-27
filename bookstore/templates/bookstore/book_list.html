@@ -1,188 +1,130 @@
 {% extends 'bookstore/base.html' %}
 
 {% block content %}
-    <div class="flex flex-col md:flex-row gap-8">
-        <!-- Filters Sidebar -->
-        <div class="w-full md:w-64">
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <h2 class="card-title">Filters</h2>
-                    <form method="get" action="{% url 'bookstore:book_list' %}">
-                        <div class="form-control">
-                            <span class="label-text">Sort By</span>
-                            <select name="sort_by" class="select select-bordered w-full" onchange="this.form.submit()">
-                                <option value="popularity" {% if sort_by == 'popularity' %}selected{% endif %}>Most
-                                    Popular
-                                </option>
-                                <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Highest Rating
-                                </option>
-                                <option value="reviews" {% if sort_by == 'reviews' %}selected{% endif %}>Most Reviews
-                                </option>
-                                <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low
-                                    to High
-                                </option>
-                                <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price:
-                                    High to Low
-                                </option>
-                            </select>
-                        </div>
-                        <!-- Search Input -->
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text">Search</span>
-                            </label>
-                            <input type="text" name="search" value="{{ search_query }}"
-                                   class="input input-bordered w-full mb-2"/>
-                        </div>
+<div class="flex flex-col md:flex-row gap-8">
+    <!-- Filters Sidebar -->
+    <div class="w-full md:w-64">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Filters</h2>
+                <form method="get" action="{% url 'bookstore:book_list' %}">
+                    <!-- Search Input -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Search</span>
+                        </label>
+                        <input type="text" name="search" value="{{ search_query }}" class="input input-bordered w-full" />
+                    </div>
 
-                        <div class="form-control">
+                    <!-- Genre Filter -->
+                    <div class="form-control">
+                        <label class="label">
                             <span class="label-text">Genre</span>
-                            <div class="card">
-
-                                <div class="form-control overflow-y-auto max-h-[300px] pr-2">
-                                    {% for genre in genres %}
-                                        <label class="label cursor-pointer">
-                                            <span class="label-text">{{ genre.name|title }}</span>
-                                            <input type="checkbox"
-                                                   name="genres"
-                                                   value="{{ genre.name }}"
-                                                   class="checkbox checkbox-primary"
-                                                    {% with selected_genres=request.GET.getlist %}
-                                                   {% if genre.name in selected_genres.genres %}checked{% endif %}
-                                                    {% endwith %}
-                                            />
-                                        </label>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <!-- Min Price Filter -->
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text">Min Price</span>
-                            </label>
-                            <input type="number" name="min_price" value="{{ min_price }}"
-                                   class="input input-bordered w-full" min="0" step="0.01"/>
-                        </div>
-
-                        <!-- Max Price Filter -->
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text">Max Price</span>
-                            </label>
-                            <input type="number" name="max_price" value="{{ max_price }}"
-                                   class="input input-bordered w-full" min="0" step="0.01"/>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-full mt-4">Apply Filters</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <!-- Book List -->
-        <div class="flex-1">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for book in page_obj %}
-                    <div class="card bg-base-100 shadow-xl">
-                        <figure class="px-10 pt-10">
-                            <img src="{{ book.get_image_url }}" alt="{{ book.title }}" class="w-full object-cover">
-                        </figure>
-                        <div class="card-body">
-                            <h2 class="card-title">{{ book.title }}</h2>
-                            <p class="text-sm text-gray-600">Genre: {{ book.genre.name }}</p>
-                            <p class="text-lg font-bold">{{ book.price }}</p>
-                            <p class="text-sm text-gray-500">{{ book.product_description|truncatewords:20 }}</p>
-                            <div class="stats shadow mb-4 border-1">
-                                <div class="stat">
-                                    <div class="stat-title">Stock</div>
-                                    <div class="stat-value text-lg">{{ book.stock.quantity_in_stock }}</div>
-                                </div>
-                                <div class="stat">
-                                    <div class="stat-title">Average Rating</div>
-                                    <div class="stat-value text-lg">
-                                        {% if book.average_rating %}
-                                            {{ book.average_rating }} / 5
-                                        {% else %}
-                                            No ratings yet
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-actions justify-end">
-                                <a href="{% url 'bookstore:book_detail' book.id %}" class="btn btn-primary">View
-                                    Details</a>
-                            </div>
-                        </div>
+                        </label>
+                        <select name="genre" class="select select-bordered w-full">
+                            <option value="">All Genres</option>
+                            {% for genre in genres %}
+                            <option value="{{ genre.id }}" {% if genre.id|stringformat:"d" == current_genre %}selected{% endif %}>
+                                {{ genre.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
                     </div>
-                {% empty %}
-                    <div class="col-span-full text-center py-8">
-                        <p class="text-xl">No books found matching your criteria.</p>
+
+                    <!-- Max Price Filter -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Max Price</span>
+                        </label>
+                        <input type="number" name="max_price" value="{{ max_price }}" class="input input-bordered w-full" min="0" step="0.01" />
                     </div>
-                {% endfor %}
-            </div>
 
-            <!-- Pagination Controls -->
-            <div class="flex justify-center items-center my-6">
-                <!-- First and Previous -->
-                <div class="flex items-center space-x-4">
-                    {% if page_obj.has_previous %}
-                        <a href="?page=1&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}"
-                           class="btn">First</a>
-                        <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}"
-                           class="btn">Previous</a>
-                    {% else %}
-                        <button class="btn btn-disabled">First</button>
-                        <button class="btn btn-disabled">Previous</button>
-                    {% endif %}
-                </div>
-
-                <!-- Page Selector -->
-                <div class="relative mx-8">
-                    <button class="btn" id="page-selector">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                    </button>
-                    <div class="absolute left-0 hidden mt-2 w-full bg-white shadow-md border z-10" id="page-dropdown">
-                        {% for page_num in page_obj.paginator.page_range %}
-                            <a href="?page={{ page_num }}&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}"
-                               class="block px-4 py-2 hover:bg-gray-100">
-                                Page {{ page_num }}
-                            </a>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Next and Last -->
-                <div class="flex items-center space-x-4">
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}"
-                           class="btn">Next</a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}"
-                           class="btn">Last</a>
-                    {% else %}
-                        <button class="btn btn-disabled">Next</button>
-                        <button class="btn btn-disabled">Last</button>
-                    {% endif %}
-                </div>
+                    <button type="submit" class="btn btn-primary w-full mt-4">Apply Filters</button>
+                </form>
             </div>
         </div>
     </div>
 
-    <script>
-        // Toggle dropdown visibility
-        document.getElementById('page-selector').addEventListener('click', function () {
-            const dropdown = document.getElementById('page-dropdown');
-            dropdown.classList.toggle('hidden');
-        });
+    <!-- Book List -->
+    <div class="flex-1">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for book in page_obj %}
+            <div class="card bg-base-100 shadow-xl">
+                <figure class="px-10 pt-10">
+                    <img src="{{ book.get_image_url }}" alt="{{ book.title }}" class="w-full object-cover">
+                </figure>
+                <div class="card-body">
+                    <h2 class="card-title">{{ book.title }}</h2>
+                    <p class="text-sm text-gray-600">Genre: {{ book.genre.name }}</p>
+                    <p class="text-lg font-bold">{{ book.price }}</p>
+                    <div class="card-actions justify-end">
+                        <a href="{% url 'bookstore:book_detail' book.id %}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-8">
+                <p class="text-xl">No books found matching your criteria.</p>
+            </div>
+            {% endfor %}
+        </div>
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function (event) {
-            const dropdown = document.getElementById('page-dropdown');
-            const button = document.getElementById('page-selector');
-            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-    </script>
+        <!-- Pagination Controls -->
+        <div class="flex justify-center items-center my-6">
+            <!-- First and Previous -->
+            <div class="flex items-center space-x-4">
+                {% if page_obj.has_previous %}
+                <a href="?page=1&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}" class="btn">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}" class="btn">Previous</a>
+                {% else %}
+                <button class="btn btn-disabled">First</button>
+                <button class="btn btn-disabled">Previous</button>
+                {% endif %}
+            </div>
+
+            <!-- Page Selector -->
+            <div class="relative mx-8">
+                <button class="btn" id="page-selector">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </button>
+                <div class="absolute left-0 hidden mt-2 w-full bg-white shadow-md border z-10" id="page-dropdown">
+                    {% for page_num in page_obj.paginator.page_range %}
+                    <a href="?page={{ page_num }}&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}"
+                       class="block px-4 py-2 hover:bg-gray-100">
+                        Page {{ page_num }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Next and Last -->
+            <div class="flex items-center space-x-4">
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}" class="btn">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&genre={{ current_genre }}&max_price={{ max_price }}" class="btn">Last</a>
+                {% else %}
+                <button class="btn btn-disabled">Next</button>
+                <button class="btn btn-disabled">Last</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle dropdown visibility
+    document.getElementById('page-selector').addEventListener('click', function () {
+        const dropdown = document.getElementById('page-dropdown');
+        dropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (event) {
+        const dropdown = document.getElementById('page-dropdown');
+        const button = document.getElementById('page-selector');
+        if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+</script>
 {% endblock %}
