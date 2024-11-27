@@ -44,9 +44,8 @@ class Customer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     phone_number = models.CharField(max_length=20, blank=True, null=True)
-    address = models.TextField()
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -56,6 +55,8 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     order_date = models.DateField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    address = models.TextField()
+
 
     def __str__(self):
         return f"Order #{self.id}"

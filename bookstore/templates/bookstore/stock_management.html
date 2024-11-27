@@ -230,27 +230,83 @@
     </div>
 
     <!-- Pagination -->
-    <div class="flex justify-center mt-6">
-        <div class="btn-group no-animation">
-            {% if page_obj.has_previous %}
-                <a href="?{{ request.GET.urlencode }}&page=1" class="btn">« First</a>
-                <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" class="btn">Previous</a>
-            {% else %}
-                <span class="btn btn-disabled">« First</span>
-                <span class="btn btn-disabled">Previous</span>
-            {% endif %}
+{% if page_obj.has_other_pages %}
+                <div class="btn-group justify-center my-8">
+                    {% if page_obj.has_previous %}
+                        <a href="{{ request.path }}?{{ query_string }}page=1" class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M3.22 7.595a.75.75 0 0 0 0 1.06l3.25 3.25a.75.75 0 0 0 1.06-1.06l-2.72-2.72 2.72-2.72a.75.75 0 0 0-1.06-1.06l-3.25 3.25Zm8.25-3.25-3.25 3.25a.75.75 0 0 0 0 1.06l3.25 3.25a.75.75 0 1 0 1.06-1.06l-2.72-2.72 2.72-2.72a.75.75 0 0 0-1.06-1.06Z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                        <a href="{{ request.path }}?{{ query_string }}page={{ page_obj.previous_page_number }}"
+                           class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                    {% else %}
+                        <span class="btn btn-disabled">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+                          <path fill-rule="evenodd"
+                                d="M3.22 7.595a.75.75 0 0 0 0 1.06l3.25 3.25a.75.75 0 0 0 1.06-1.06l-2.72-2.72 2.72-2.72a.75.75 0 0 0-1.06-1.06l-3.25 3.25Zm8.25-3.25-3.25 3.25a.75.75 0 0 0 0 1.06l3.25 3.25a.75.75 0 1 0 1.06-1.06l-2.72-2.72 2.72-2.72a.75.75 0 0 0-1.06-1.06Z"
+                                clip-rule="evenodd"/>
+                        </svg>
 
-            <span class="btn btn-ghost">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
 
-            {% if page_obj.has_next %}
-                <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" class="btn">Next</a>
-                <a href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}" class="btn">Last »</a>
-            {% else %}
-                <span class="btn btn-disabled">Next</span>
-                <span class="btn btn-disabled">Last »</span>
+                        </span>
+                        <span class="btn btn-disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                              <path fill-rule="evenodd"
+                                    d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z"
+                                    clip-rule="evenodd"/>
+                            </svg>
+                            </span>
+                    {% endif %}
+
+                    <button class="btn">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</button>
+
+                    {% if page_obj.has_next %}
+                        <a href="{{ request.path }}?{{ query_string }}page={{ page_obj.next_page_number }}" class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                        <a href="{{ request.path }}?{{ query_string }}page={{ page_obj.paginator.num_pages }}"
+                           class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M12.78 7.595a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06l2.72-2.72-2.72-2.72a.75.75 0 0 1 1.06-1.06l3.25 3.25Zm-8.25-3.25 3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06l2.72-2.72-2.72-2.72a.75.75 0 0 1 1.06-1.06Z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                    {% else %}
+                        <span class="btn btn-disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"
+                                      clip-rule="evenodd"/>
+                            </svg></span>
+                        <span class="btn btn-disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                              <path fill-rule="evenodd"
+                                    d="M12.78 7.595a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06l2.72-2.72-2.72-2.72a.75.75 0 0 1 1.06-1.06l3.25 3.25Zm-8.25-3.25 3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06l2.72-2.72-2.72-2.72a.75.75 0 0 1 1.06-1.06Z"
+                                    clip-rule="evenodd"/>
+                            </svg>
+</span>
+                    {% endif %}
+                </div>
             {% endif %}
-        </div>
-    </div>
 {% endblock %}

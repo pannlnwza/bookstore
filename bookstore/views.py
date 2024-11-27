@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -130,30 +132,20 @@ def place_order(request):
                 messages.error(request, "Please fill in all required fields.")
                 return redirect('bookstore:cart')
 
-            # Check or create customer record
-            customer = Customer.objects.filter(user=request.user).first()
-            if not customer:
-                customer = Customer.objects.create(
-                    user=request.user,
-                    first_name=full_name.split()[0],
-                    last_name=" ".join(full_name.split()[1:]),
-                    email=request.user.email,
-                    phone_number=phone,
-                    address=address
-                )
-            else:
-                # Update customer information
-                customer.first_name = full_name.split()[0]
-                customer.last_name = " ".join(full_name.split()[1:])
-                customer.phone_number = phone
-                customer.address = address
-                customer.save()
+            customer = Customer.objects.create(
+                user=request.user,
+                first_name=full_name.split()[0],
+                last_name=" ".join(full_name.split()[1:]),
+                email=request.user.email,
+                phone_number=phone,
+            )
+
 
             with transaction.atomic():
-                # Create order
                 order = Order.objects.create(
                     customer=customer,
-                    total_amount=cart.total
+                    total_amount=cart.total,
+                    address=address
                 )
 
                 # Create order items and update stock
@@ -311,20 +303,52 @@ def signup(request):
 
     return render(request, 'account/signup.html', {'form': form})
 
-class OrderListView(LoginRequiredMixin, generic.ListView):
-    model = Order
+
+class OrderListView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'bookstore/orders/order_list.html'
-    context_object_name = 'page_obj'
-    paginate_by = 10
 
-    def get_queryset(self):
-        try:
-            customer = Customer.objects.get(user=self.request.user)
-            return Order.objects.filter(customer=customer).order_by('-order_date')
-        except Customer.DoesNotExist:
-            # If no Customer exists, return an empty queryset
-            return Order.objects.none()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        orders = Order.objects.filter(customer__user=self.request.user).order_by('-order_date')
+        if not orders:
+            context['page_obj'] = None
+            return context
 
+        # Get all orders for the current user
+
+
+        # Filter by Order ID
+        order_id = self.request.GET.get('order_id', '').strip()
+        if order_id:
+            queryset = orders.filter(id=order_id)
+
+        # Filter by Date Range
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            queryset = orders.filter(order_date__gte=start_date)
+
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            queryset = orders.filter(order_date__lte=end_date)
+
+        # Handle pagination
+        paginator = Paginator(orders, 5)  # Show 5 orders per page
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        # Pass context
+        context['page_obj'] = page_obj
+
+        # Add query string for pagination links
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']
+        context['query_string'] = query_params.urlencode()
+
+        return context
 
 class OrderDetailView(LoginRequiredMixin, generic.TemplateView):
     model = Order

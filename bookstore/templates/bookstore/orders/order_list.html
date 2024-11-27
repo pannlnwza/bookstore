@@ -1,74 +1,192 @@
 {% extends 'bookstore/base.html' %}
 
 {% block content %}
-<div class="container mx-auto px-4">
-    <h1 class="text-3xl font-bold mb-8">My Orders</h1>
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold mb-8">My Orders</h1>
 
-    {% if page_obj %}
-        <div class="space-y-6">
-            {% for order in page_obj %}
-                <div class="card bg-base-100 border-2 border-base-200">
-                    <div class="card-body">
-                        <div class="flex flex-col md:flex-row justify-between">
-                            <div>
-                                <h2 class="card-title">Order #{{ order.id }}</h2>
-                                <p class="text-sm opacity-70">Placed on {{ order.order_date|date:"F j, Y" }}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-bold text-lg">${{ order.total_amount }}</p>
-                            </div>
-                        </div>
-
-                        <div class="divider"></div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <h3 class="font-semibold mb-2">Shipping Address</h3>
-                                <p>{{ order.customer.first_name }} {{ order.customer.last_name }}</p>
-                                <p class="whitespace-pre-line">{{ order.address }}</p>
-                            </div>
-                            <div>
-                                <h3 class="font-semibold mb-2">Order Summary</h3>
-                                <p>{{ order.order_items.count }} items</p>
-                                <p>Payment: {{ order.payment.payment_method }}</p>
-                            </div>
-                        </div>
-
-                        <div class="card-actions justify-end mt-4">
-                            <a href="{% url 'bookstore:order_detail' order.id %}" class="btn btn-primary">
-                                View Details
-                            </a>
-                        </div>
-                    </div>
+        <!-- Search and Filter Section -->
+        <div class="mb-6 card bg-base-100 p-4">
+            <form method="get" class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Search Order ID</span>
+                    </label>
+                    <input
+                            type="number"
+                            name="order_id"
+                            placeholder="Search by Order ID"
+                            class="input input-bordered"
+                            value="{{ request.GET.order_id }}"
+                    >
                 </div>
-            {% endfor %}
-        </div>
 
-        {% if page_obj.has_other_pages %}
-            <div class="btn-group justify-center my-8">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" class="btn">«</a>
-                {% endif %}
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">From Date</span>
+                    </label>
+                    <input
+                            type="date"
+                            name="start_date"
+                            class="input input-bordered"
+                            value="{{ request.GET.start_date }}"
+                    >
+                </div>
 
-                <button class="btn">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</button>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">To Date</span>
+                    </label>
+                    <input
+                            type="date"
+                            name="end_date"
+                            class="input input-bordered"
+                            value="{{ request.GET.end_date }}"
+                    >
+                </div>
 
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="btn">»</a>
-                {% endif %}
-            </div>
-        {% endif %}
-    {% else %}
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body text-center">
-                <h2 class="card-title justify-center">No orders yet</h2>
-                <p>You haven't placed any orders yet.</p>
-                <div class="card-actions justify-center mt-4">
-                    <a href="{% url 'bookstore:book_list' %}" class="btn btn-primary">
-                        Start Shopping
+                <div class="flex items-end space-x-2">
+                    <button type="submit" class="btn btn-primary">
+                        Search
+                    </button>
+                    <a href="{% url 'bookstore:order_list' %}" class="btn btn-ghost">
+                        Reset
                     </a>
                 </div>
-            </div>
+            </form>
         </div>
-    {% endif %}
-</div>
+
+        {% if page_obj %}
+            <div class="space-y-6">
+                {% for order in page_obj %}
+                    <div class="card bg-base-100 border-2 border-base-200">
+                        <div class="card-body">
+                            <div class="flex flex-col md:flex-row justify-between">
+                                <div>
+                                    <h2 class="card-title">Order #{{ order.id }}</h2>
+                                    <p class="text-sm opacity-70">Placed on {{ order.order_date|date:"F j, Y" }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-lg">${{ order.total_amount }}</p>
+                                </div>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h3 class="font-semibold mb-2">Shipping Address</h3>
+                                    <p>{{ order.customer.first_name }} {{ order.customer.last_name }}</p>
+                                    <p class="whitespace-pre-line">{{ order.address }}</p>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold mb-2">Order Summary</h3>
+                                    <p>{{ order.order_items.count }} items</p>
+                                    <p>Payment: {{ order.payment.payment_method }}</p>
+                                </div>
+                            </div>
+
+                            <div class="card-actions justify-end mt-4">
+                                <a href="{% url 'bookstore:order_detail' order.id %}" class="btn btn-primary">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <div class="btn-group justify-center my-8">
+                    {% if page_obj.has_previous %}
+                        <a href="{{ request.path }}?{{ query_string }}page=1" class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M3.22 7.595a.75.75 0 0 0 0 1.06l3.25 3.25a.75.75 0 0 0 1.06-1.06l-2.72-2.72 2.72-2.72a.75.75 0 0 0-1.06-1.06l-3.25 3.25Zm8.25-3.25-3.25 3.25a.75.75 0 0 0 0 1.06l3.25 3.25a.75.75 0 1 0 1.06-1.06l-2.72-2.72 2.72-2.72a.75.75 0 0 0-1.06-1.06Z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                        <a href="{{ request.path }}?{{ query_string }}page={{ page_obj.previous_page_number }}"
+                           class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                    {% else %}
+                        <span class="btn btn-disabled">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+                          <path fill-rule="evenodd"
+                                d="M3.22 7.595a.75.75 0 0 0 0 1.06l3.25 3.25a.75.75 0 0 0 1.06-1.06l-2.72-2.72 2.72-2.72a.75.75 0 0 0-1.06-1.06l-3.25 3.25Zm8.25-3.25-3.25 3.25a.75.75 0 0 0 0 1.06l3.25 3.25a.75.75 0 1 0 1.06-1.06l-2.72-2.72 2.72-2.72a.75.75 0 0 0-1.06-1.06Z"
+                                clip-rule="evenodd"/>
+                        </svg>
+
+
+                        </span>
+                        <span class="btn btn-disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                              <path fill-rule="evenodd"
+                                    d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z"
+                                    clip-rule="evenodd"/>
+                            </svg>
+                            </span>
+                    {% endif %}
+
+                    <button class="btn">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</button>
+
+                    {% if page_obj.has_next %}
+                        <a href="{{ request.path }}?{{ query_string }}page={{ page_obj.next_page_number }}" class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                        <a href="{{ request.path }}?{{ query_string }}page={{ page_obj.paginator.num_pages }}"
+                           class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M12.78 7.595a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06l2.72-2.72-2.72-2.72a.75.75 0 0 1 1.06-1.06l3.25 3.25Zm-8.25-3.25 3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06l2.72-2.72-2.72-2.72a.75.75 0 0 1 1.06-1.06Z"
+                                      clip-rule="evenodd"/>
+                            </svg>
+                        </a>
+                    {% else %}
+                        <span class="btn btn-disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                                <path fill-rule="evenodd"
+                                      d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"
+                                      clip-rule="evenodd"/>
+                            </svg></span>
+                        <span class="btn btn-disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                                 class="size-4">
+                              <path fill-rule="evenodd"
+                                    d="M12.78 7.595a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06l2.72-2.72-2.72-2.72a.75.75 0 0 1 1.06-1.06l3.25 3.25Zm-8.25-3.25 3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06l2.72-2.72-2.72-2.72a.75.75 0 0 1 1.06-1.06Z"
+                                    clip-rule="evenodd"/>
+                            </svg>
+</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body text-center">
+                    <h2 class="card-title justify-center">No orders found</h2>
+                    <p>There are no orders matching your search criteria.</p>
+                    <div class="card-actions justify-center mt-4">
+                        <a href="{% url 'bookstore:book_list' %}" class="btn btn-primary">
+                            Start Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
 {% endblock %}
