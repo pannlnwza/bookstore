@@ -340,29 +340,22 @@ class StockManagementView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Get all books initially
         books_list = Book.objects.all()
 
-        # Search by title
         search_query = self.request.GET.get('search', '')
         if search_query:
             books_list = books_list.filter(title__icontains=search_query)
 
-        # Filter by multiple genres
         selected_genres = self.request.GET.getlist('genres')
         if selected_genres:
             books_list = books_list.filter(genre__name__in=selected_genres)
 
-        # Price range filter
         min_price = self.request.GET.get('min_price')
         max_price = self.request.GET.get('max_price')
         if min_price:
             books_list = books_list.filter(price__gte=float(min_price))
         if max_price:
             books_list = books_list.filter(price__lte=float(max_price))
-
-        # Stock range filter
         min_stock = self.request.GET.get('min_stock')
         max_stock = self.request.GET.get('max_stock')
         if min_stock:
@@ -370,15 +363,11 @@ class StockManagementView(generic.TemplateView):
         if max_stock:
             books_list = books_list.filter(stock__quantity_in_stock__lte=int(max_stock))
 
-        # Pagination
-        paginator = Paginator(books_list, 10)  # Show 10 books per page
+        paginator = Paginator(books_list, 10)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        # Get all genres for the filter dropdown
         context['genres'] = Genre.objects.all()
-
-        # Pass filters and pagination to the template to maintain state
         context['search'] = search_query
         context['selected_genres'] = selected_genres
         context['min_price'] = min_price
@@ -390,10 +379,11 @@ class StockManagementView(generic.TemplateView):
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_superuser:
+        if not request.user.is_staff:
             messages.error(request, "You are not authorized to view this page.")
             return redirect('bookstore:home')
         return super().dispatch(request, *args, **kwargs)
+
 class AddView(generic.TemplateView):
     template_name = 'bookstore/add_book.html'
 
@@ -402,37 +392,45 @@ class AddView(generic.TemplateView):
         context['genres'] = Genre.objects.all()
         return context
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "You are not authorized to view this page.")
+            return redirect('bookstore:home')
+        return super().dispatch(request, *args, **kwargs)
+
 
 @login_required
 def add_book(request):
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        genre_id = request.POST.get('genre')
-        price = request.POST.get('price')
-        product_description = request.POST.get('product_description')
-        universal_product_code = request.POST.get('universal_product_code')
-        image_url = request.POST.get('image_url')
-        image = request.FILES.get('image')
+    if request.user.is_staff:
+        if request.method == 'POST':
+            title = request.POST.get('title')
+            genre_id = request.POST.get('genre')
+            price = request.POST.get('price')
+            product_description = request.POST.get('product_description')
+            universal_product_code = request.POST.get('universal_product_code')
+            image_url = request.POST.get('image_url')
+            image = request.FILES.get('image')
 
-        genre = Genre.objects.get(id=genre_id)
+            genre = Genre.objects.get(id=genre_id)
 
-        book = Book(
-            title=title,
-            genre=genre,
-            price=price,
-            product_description=product_description,
-            universal_product_code=universal_product_code,
-            image_url=image_url,
-        )
+            book = Book(
+                title=title,
+                genre=genre,
+                price=price,
+                product_description=product_description,
+                universal_product_code=universal_product_code,
+                image_url=image_url,
+            )
 
-        if image:
-            book.image = image
+            if image:
+                book.image = image
 
-        book.save()
-        messages.success(request, f"Book {book.title} has been added successfully!")
-        return redirect('bookstore:stock_management')
+            book.save()
+            messages.success(request, f"Book {book.title} has been added successfully!")
+            return redirect('bookstore:stock_management')
 
-    return redirect('bookstore:stock_management')
+    messages.error(request, "You are not authorized to view this page.")
+    return redirect('bookstore:home')
 
 class EditBookView(generic.TemplateView):
     template_name = 'bookstore/edit_book.html'
@@ -446,11 +444,17 @@ class EditBookView(generic.TemplateView):
         context['genres'] = genres
         return context
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "You are not authorized to view this page.")
+            return redirect('bookstore:home')
+        return super().dispatch(request, *args, **kwargs)
+
 
 def edit_book(request, book_id):
     book = get_object_or_404(Book, id=book_id)
 
-    if request.user.is_superuser:
+    if request.user.is_staff:
         if request.method == 'POST':
             # Get form data
             book.universal_product_code = request.POST.get('universal_product_code', book.universal_product_code)
@@ -479,7 +483,7 @@ def edit_book(request, book_id):
 
 @login_required
 def delete_book(request, book_id):
-    if request.user.is_superuser:
+    if request.user.is_staff:
         book = get_object_or_404(Book, id=book_id)
         book.delete()
 
@@ -491,21 +495,24 @@ def delete_book(request, book_id):
 
 
 def update_stock(request, book_id):
-    if request.method == 'POST':
-        book = get_object_or_404(Book, id=book_id)
-        stock, create = Stock.objects.get_or_create(book=book)
-        new_quantity = request.POST.get('quantity_in_stock')
+    if request.user.is_staff:
+        if request.method == 'POST':
+            book = get_object_or_404(Book, id=book_id)
+            stock, create = Stock.objects.get_or_create(book=book)
+            new_quantity = request.POST.get('quantity_in_stock')
 
-        if new_quantity is not None:
-            try:
-                stock.quantity_in_stock = int(new_quantity)
-                stock.save()
-                messages.success(request, f"Stock for {book.title} updated successfully!")
-            except ValueError:
-                messages.error(request, "Invalid quantity. Please enter a valid number.")
-        else:
-            messages.error(request, "No quantity provided.")
+            if new_quantity is not None:
+                try:
+                    stock.quantity_in_stock = int(new_quantity)
+                    stock.save()
+                    messages.success(request, f"Stock for {book.title} updated successfully!")
+                except ValueError:
+                    messages.error(request, "Invalid quantity. Please enter a valid number.")
+            else:
+                messages.error(request, "No quantity provided.")
+
+            return redirect('bookstore:stock_management')
 
         return redirect('bookstore:stock_management')
-
-    return redirect('bookstore:stock_management')
+    messages.error(request, "You are not authorized to view this page.")
+    return redirect('bookstore:home')
