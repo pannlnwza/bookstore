@@ -435,39 +435,53 @@ def delete_book(request, book_id):
     return redirect('bookstore:home')
 
 
-from django.db.models import Q
+from django.db import IntegrityError
 
 @login_required
 def add_review(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
-    customer = get_object_or_404(Customer, user=request.user)
+    try:
+        book = get_object_or_404(Book, id=book_id)
 
-    # Check if the user has ordered this book
-    has_ordered_book = OrderItem.objects.filter(
-        order__customer=customer,
-        book=book
-    ).exists()
+        # Validate that the user has purchased the book
+        has_ordered_book = OrderItem.objects.filter(
+            order__customer__user=request.user,
+            book=book
+        ).exists()
 
-    if not has_ordered_book:
-        messages.error(request, "You can only review books you have purchased.")
+        if not has_ordered_book:
+            messages.error(request, "You can only review books you have purchased.")
+            return redirect('bookstore:book_detail', book_id=book_id)
+
+        # Check if a review already exists
+        existing_review = Review.objects.filter(
+            customer__user=request.user,
+            book=book
+        ).first()
+
+        if request.method == 'POST':
+            form = ReviewForm(request.POST, instance=existing_review)  # Edit if exists
+            if form.is_valid():
+                review = form.save(commit=False)
+                review.customer = Customer.objects.get(user=request.user)
+                review.book = book
+                review.save()
+                messages.success(request, "Your review has been submitted.")
+                return redirect('bookstore:book_detail', book_id=book_id)
+            else:
+                messages.error(request, "There was an error with your review. Please try again.")
+        else:
+            form = ReviewForm(instance=existing_review)  # Pre-fill if exists
+
+    except IntegrityError as e:
+        messages.error(request, f"An error occurred: {str(e)}")
         return redirect('bookstore:book_detail', book_id=book_id)
 
-    # Check if the user already reviewed this book
-    existing_review = Review.objects.filter(customer=customer, book=book).first()
-
-    if request.method == 'POST':
-        form = ReviewForm(request.POST, instance=existing_review)  # Edit if exists
-        if form.is_valid():
-            review = form.save(commit=False)
-            review.customer = customer
-            review.book = book
-            review.save()
-            messages.success(request, "Your review has been submitted.")
-            return redirect('bookstore:book_detail', book_id=book_id)
-    else:
-        form = ReviewForm(instance=existing_review)  # Pre-fill if exists
-
-    return render(request, 'bookstore/add_review.html', {'form': form, 'book': book})
+    # Fallback render for form errors or GET requests
+    return render(request, 'bookstore/book_detail.html', {
+        'form': form,
+        'book': book,
+        'reviews': book.reviews.all(),
+    })
 
 
 @login_required
@@ -497,3 +511,14 @@ def update_stock(request, book_id):
         return redirect('bookstore:stock_management')  # Redirect to the stock management page
 
     return redirect('bookstore:stock_management')
+
+
+class MyReviewsView(LoginRequiredMixin, generic.ListView):
+    model = Review
+    template_name = 'bookstore/my_reviews.html'
+    context_object_name = 'reviews'
+    paginate_by = 10  # Add pagination if needed
+
+    def get_queryset(self):
+        # Filter reviews for the logged-in user
+        return Review.objects.filter(customer__user=self.request.user).select_related('book').order_by('-created_at')

@@ -43,6 +43,7 @@
                     <li><a href="{% url 'bookstore:book_list' %}">Books</a></li>
                     <li><a href="{% url 'bookstore:stock_management' %}">Stocks</a></li>
                     <li><a href="{% url 'bookstore:cart' %}">Cart</a></li>
+                    <li><a href="{% url 'bookstore:my_reviews' %}">My Reviews</a></li>
                     <li><a href="{% url 'bookstore:order_list' %}">My Orders</a></li>
                     {% if user.is_authenticated %}
                         <div class="dropdown dropdown-end">
