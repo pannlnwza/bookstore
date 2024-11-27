@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -21,6 +22,10 @@ class Book(models.Model):
     image = models.ImageField(upload_to='book_images/', blank=True, null=True)
     sales_count = models.PositiveIntegerField(default=0)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["-sales_count"]),
+        ]
 
     def get_image_url(self):
         """
@@ -123,6 +128,10 @@ class Review(models.Model):
     class Meta:
         unique_together = ('user', 'book')  # Ensures one review per user per book
         ordering = ['-created_at']  # Newest reviews appear first
+
+    def clean(self):
+        if not (1 <= self.rating <= 5):
+            raise ValidationError("Rating must be between 1 and 5.")
 
     def __str__(self):
         return f"Review by {self.user.username} on {self.book.title}"
