@@ -59,10 +59,10 @@
                 <div class="card-body">
                     <h2 class="card-title">Shipping Information</h2>
                     <div class="space-y-2">
-                        <p><strong>Name:</strong> {{ order.customer.first_name }} {{ order.customer.last_name }}</p>
-                        <p><strong>Email:</strong> {{ order.customer.user.email }}</p>
-                        {% if order.customer.phone_number %}
-                            <p><strong>Phone:</strong> {{ order.customer.phone_number }}</p>
+                        <p><strong>Name:</strong> {{ order.full_name }}</p>
+                        <p><strong>Email:</strong> {{ order.user.email }}</p>
+                        {% if order.phone %}
+                            <p><strong>Phone:</strong> {{ order.phone }}</p>
                         {% endif %}
                         <p><strong>Address:</strong></p>
                         <p class="whitespace-pre-line">{{ order.address }}</p>

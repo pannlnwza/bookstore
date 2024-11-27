@@ -1,13 +1,11 @@
 from datetime import datetime
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Sum, Avg, Count
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-
-from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Customer, Review, Favorite
+from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Review, Favorite
 from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
@@ -16,6 +14,7 @@ from bookstore.forms import SignUpForm, ReviewForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views import generic
 from django.db import IntegrityError
+
 
 
 
@@ -31,32 +30,26 @@ class HomeView(generic.TemplateView):
 
 
 def book_list(request):
-    # Retrieve and validate query parameters
-    selected_genres = request.GET.getlist('genres')  # Multi-select genres
-    search_query = request.GET.get('search', '')  # Search term
-    max_price = request.GET.get('max_price')  # Max price filter
-    sort_by = request.GET.get('sort_by', 'popularity')  # Sorting option with default
+    selected_genres = request.GET.getlist('genres')
+    search_query = request.GET.get('search', '')
+    max_price = request.GET.get('max_price')
+    sort_by = request.GET.get('sort_by', 'popularity')
 
-    # Retrieve books with necessary related data
     books = Book.objects.select_related('genre').prefetch_related('stock')
 
-    # Filter by genre
     if selected_genres:
         books = books.filter(genre__name__in=selected_genres)
 
-    # Perform search for books matching the query
     if search_query:
         books = books.filter(title__icontains=search_query)
 
-    # Filter by max price
     if max_price:
         try:
             max_price = float(max_price)
             books = books.filter(price__lte=max_price)
         except ValueError:
-            pass  # Invalid price input, ignore filter
+            pass
 
-    # Apply sorting based on the selected option
     if sort_by == 'popularity':
         books = books.annotate(total_sales=Sum('order_items__quantity')).order_by('-total_sales')
     elif sort_by == 'rating':
@@ -68,18 +61,12 @@ def book_list(request):
     elif sort_by == 'price_desc':
         books = books.order_by('-price')
 
-    # Separate books into in-stock and out-of-stock
     in_stock_books = books.filter(stock__quantity_in_stock__gt=0)
     out_of_stock_books = books.filter(stock__quantity_in_stock=0)
-
-    # Combine in-stock and out-of-stock books, ensuring in-stock appears first
     books = in_stock_books | out_of_stock_books
 
-    # Retrieve all genres for filtering
     genres = Genre.objects.all()
-
-    # Paginate the books
-    paginator = Paginator(books, 12)  # 12 books per page
+    paginator = Paginator(books, 12)
     page_number = request.GET.get('page')
 
     try:
@@ -89,7 +76,6 @@ def book_list(request):
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
 
-    # Render the results with all necessary context
     return render(request, 'bookstore/book_list.html', {
         'page_obj': page_obj,
         'genres': genres,
@@ -103,16 +89,13 @@ def book_list(request):
 def book_detail(request, book_id):
     book = get_object_or_404(Book.objects.select_related('stock'), id=book_id)
     related_books = Book.objects.filter(genre=book.genre).exclude(id=book_id)[:4]
-    reviews = book.reviews.select_related('customer').all()
+    reviews = book.reviews.select_related('user').all()
 
-    # Check if the user has purchased this book
     is_favorited = False
     user_has_purchased = False
     if request.user.is_authenticated:
-        customer = Customer.objects.filter(user=request.user).first()
-        if customer:
-            user_has_purchased = OrderItem.objects.filter(order__customer=customer, book=book).exists()
-            is_favorited = Favorite.objects.filter(user=request.user, book=book).exists()
+        user_has_purchased = OrderItem.objects.filter(order__user=request.user, book=book).exists()
+        is_favorited = Favorite.objects.filter(user=request.user, book=book).exists()
 
     return render(request, 'bookstore/book_detail.html', {
         'book': book,
@@ -124,10 +107,10 @@ def book_detail(request, book_id):
 
 
 @login_required
+@login_required
 def place_order(request):
     if request.method == 'POST':
         try:
-            # Get user's cart and cart items
             cart = get_object_or_404(Cart, user=request.user)
             cart_items = CartItem.objects.filter(cart=cart)
 
@@ -135,40 +118,30 @@ def place_order(request):
                 messages.error(request, "Your cart is empty.")
                 return redirect('bookstore:cart')
 
-            # Validate stock availability
             for cart_item in cart_items:
                 stock = Stock.objects.get(book=cart_item.book)
                 if cart_item.quantity > stock.quantity_in_stock:
                     messages.error(request, f"Insufficient stock for {cart_item.book.title}.")
                     return redirect('bookstore:cart')
 
-            # Collect form data
             full_name = request.POST.get('full_name')
-            phone = request.POST.get('phone')
             address = request.POST.get('address')
             payment_method = request.POST.get('payment_method')
+            phone = request.POST.get('phone')
 
             if not all([full_name, address, payment_method]):
                 messages.error(request, "Please fill in all required fields.")
                 return redirect('bookstore:cart')
 
-            customer = Customer.objects.create(
-                user=request.user,
-                first_name=full_name.split()[0],
-                last_name=" ".join(full_name.split()[1:]),
-                email=request.user.email,
-                phone_number=phone,
-            )
-
-
             with transaction.atomic():
                 order = Order.objects.create(
-                    customer=customer,
+                    user=request.user,
                     total_amount=cart.total,
-                    address=address
+                    full_name=full_name,
+                    address=address,
+                    phone=phone,
                 )
 
-                # Create order items and update stock
                 for cart_item in cart_items:
                     OrderItem.objects.create(
                         order=order,
@@ -177,25 +150,20 @@ def place_order(request):
                         price_at_time=cart_item.price_at_time
                     )
 
-                    # Deduct stock
                     stock = Stock.objects.get(book=cart_item.book)
                     stock.quantity_in_stock -= cart_item.quantity
                     stock.save()
 
-                # Create payment
                 Payment.objects.create(
                     order=order,
                     payment_method=payment_method,
                     amount=cart.total
                 )
 
-                # Clear the cart
                 cart_items.delete()
                 cart.delete()
 
-            # Notify the user
             messages.success(request, f"Order #{order.id} placed successfully!")
-            print(order.id)
             return redirect('bookstore:order_detail', order_id=order.id)
 
         except Cart.DoesNotExist:
@@ -331,7 +299,7 @@ class OrderListView(LoginRequiredMixin, generic.TemplateView):
 
         # Annotate orders with item count
         orders = (
-            Order.objects.filter(customer__user=self.request.user)
+            Order.objects.filter(user=self.request.user)
             .annotate(item_count=Count('order_items'))  # Annotate with count of OrderItems
             .order_by('-order_date')
         )
@@ -564,7 +532,7 @@ def add_review(request, book_id):
 
         # Validate that the user has purchased the book
         has_ordered_book = OrderItem.objects.filter(
-            order__customer__user=request.user,
+            order__user=request.user,
             book=book
         ).exists()
 
@@ -574,7 +542,7 @@ def add_review(request, book_id):
 
         # Check if a review already exists
         existing_review = Review.objects.filter(
-            customer__user=request.user,
+            user=request.user,
             book=book
         ).first()
 
@@ -582,7 +550,7 @@ def add_review(request, book_id):
             form = ReviewForm(request.POST, instance=existing_review)  # Edit if exists
             if form.is_valid():
                 review = form.save(commit=False)
-                review.customer = Customer.objects.get(user=request.user)
+                review.user = request.user
                 review.book = book
                 review.save()
                 messages.success(request, "Your review has been submitted.")
@@ -606,7 +574,7 @@ def add_review(request, book_id):
 
 @login_required
 def delete_review(request, review_id):
-    review = get_object_or_404(Review, id=review_id, customer__user=request.user)
+    review = get_object_or_404(Review, id=review_id, user=request.user)
     review.delete()
     messages.success(request, "Your review has been deleted.")
     return redirect('bookstore:book_detail', book_id=review.book.id)
@@ -644,7 +612,7 @@ class MyReviewsView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         # Filter reviews for the logged-in user
-        return Review.objects.filter(customer__user=self.request.user).select_related('book').order_by('-created_at')
+        return Review.objects.filter(user=self.request.user).select_related('book').order_by('-created_at')
 
 
 @login_required
