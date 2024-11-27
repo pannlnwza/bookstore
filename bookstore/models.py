@@ -26,7 +26,6 @@ class Book(models.Model):
         indexes = [
             models.Index(fields=["-sales_count"]),
         ]
-
     def get_image_url(self):
         """
         Returns the uploaded image URL if available; otherwise, returns the image_url.
@@ -41,6 +40,9 @@ class Book(models.Model):
         if reviews.exists():
             return round(reviews.aggregate(models.Avg('rating'))['rating__avg'], 1)
         return None
+
+    def get_sale_count(self):
+        return self.order_items.count()
 
     def __str__(self):
         return self.title

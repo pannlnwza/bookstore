@@ -33,6 +33,10 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            <div class="stat">
+                                <div class="stat-title">Sales</div>
+                                <div class="stat-value text-lg">{{ favorite.book.get_sale_count }}</div>
+                            </div>
                         </div>
                         <div class="card-actions justify-end">
                             <a href="{% url 'bookstore:book_detail' favorite.book.id %}" class="btn btn-primary">View Details</a>

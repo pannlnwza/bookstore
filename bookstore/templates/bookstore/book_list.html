@@ -78,7 +78,7 @@
         </div>
 
         <div class="flex-1">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {% for book in page_obj %}
                     <div class="card bg-base-100 shadow-xl">
                         <figure class="px-10 pt-10">
@@ -103,6 +103,10 @@
                                             No ratings yet
                                         {% endif %}
                                     </div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-title">Sales</div>
+                                    <div class="stat-value text-lg">{{ book.get_sale_count }}</div>
                                 </div>
                             </div>
                             <div class="card-actions justify-end">
