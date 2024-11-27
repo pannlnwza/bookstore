@@ -105,7 +105,6 @@ def book_list(request):
     })
 
 
-
 def book_detail(request, book_id):
     book = get_object_or_404(Book.objects.select_related('stock'), id=book_id)
     related_books = Book.objects.filter(genre=book.genre).exclude(id=book_id)[:4]
@@ -158,30 +157,20 @@ def place_order(request):
                 messages.error(request, "Please fill in all required fields.")
                 return redirect('bookstore:cart')
 
-            # Check or create customer record
-            customer = Customer.objects.filter(user=request.user).first()
-            if not customer:
-                customer = Customer.objects.create(
-                    user=request.user,
-                    first_name=full_name.split()[0],
-                    last_name=" ".join(full_name.split()[1:]),
-                    email=request.user.email,
-                    phone_number=phone,
-                    address=address
-                )
-            else:
-                # Update customer information
-                customer.first_name = full_name.split()[0]
-                customer.last_name = " ".join(full_name.split()[1:])
-                customer.phone_number = phone
-                customer.address = address
-                customer.save()
+            customer = Customer.objects.create(
+                user=request.user,
+                first_name=full_name.split()[0],
+                last_name=" ".join(full_name.split()[1:]),
+                email=request.user.email,
+                phone_number=phone,
+            )
+
 
             with transaction.atomic():
-                # Create order
                 order = Order.objects.create(
                     customer=customer,
-                    total_amount=cart.total
+                    total_amount=cart.total,
+                    address=address
                 )
 
                 # Create order items and update stock
