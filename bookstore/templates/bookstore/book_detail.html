@@ -71,7 +71,7 @@
                 {% for review in reviews %}
                     <li class="mb-4">
                         <div class="flex items-center mb-2">
-                        <p class="text-lg mr-2"><strong>{{ review.customer.first_name }}</strong></p>
+                        <p class="text-lg mr-2"><strong>{{ review.user.username }}</strong></p>
 
                             <!-- Star Rating Display -->
                             <div class="rating rating-sm">
@@ -86,7 +86,7 @@
                         </div>
                         <p class="text-sm text-gray-600">{{ review.created_at|date:"F j, Y" }}</p>
                         <p class="text-md">{{ review.review_message }}</p>
-                        {% if review.customer.user == request.user %}
+                        {% if review.user == request.user %}
                         <div class="mt-1">
                             <a href="{% url 'bookstore:delete_review' review.id %}" class="btn btn-error text-white btn-xs"  onclick="return confirm('Are you sure you want to delete this review?');">Delete</a>
                         </div>
