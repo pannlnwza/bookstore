@@ -28,11 +28,12 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
+
 class Customer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     address = models.TextField()
 
