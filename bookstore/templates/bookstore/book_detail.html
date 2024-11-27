@@ -32,6 +32,19 @@
             </div>
         </div>
 
+        <div class="flex gap-4 my-4">
+            {% if user.is_authenticated %}
+                {% if is_favorited %}
+                    <a href="{% url 'bookstore:remove_from_favorites' book.id %}" class="btn btn-error">
+                        Remove from Favorites
+                    </a>
+                {% else %}
+                    <a href="{% url 'bookstore:add_to_favorites' book.id %}" class="btn btn-primary">
+                        Add to Favorites
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
         <!-- Add to Cart Form -->
         <form method="post" action="{% url 'bookstore:add_to_cart' book.id %}" class="flex gap-4 items-end">
             {% csrf_token %}

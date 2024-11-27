@@ -1,0 +1,55 @@
+{% extends 'bookstore/base.html' %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">My Reviews</h1>
+
+{% if reviews %}
+    <div class="overflow-x-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for review in reviews %}
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title">{{ review.book.title }}</h2>
+                        <figure class="px-10 pt-10">
+                        <!-- Use the actual image URL from the Book model -->
+                        <img src="{{ review.book.image_url }}" alt="{{ review.book.title }}" class="w-52 object-cover">
+                        </figure>
+                        <p class="text-sm text-gray-600">{{ review.created_at|date:"F j, Y" }}</p>
+                        <div class="rating rating-sm mb-2">
+                            {% for i in "12345" %}
+                                        {% if review.rating == i|add:"0" %}
+                                            <input type="radio" disabled checked="checked" class="mask mask-star-2 bg-orange-400">
+                                        {% else %}
+                                            <input type="radio" disabled class="mask mask-star-2 bg-orange-400">
+                                        {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p>{{ review.review_message }}</p>
+                        <div class="card-actions justify-end">
+                            <a href="{% url 'bookstore:book_detail' review.book.id %}" class="btn btn-primary btn-sm">View Book</a>
+                            <a href="{% url 'bookstore:delete_review' review.id %}" class="btn btn-error btn-sm" onclick="return confirm('Are you sure you want to delete this review?');">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-6">
+            {% if is_paginated %}
+                <div class="btn-group">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn">Previous</a>
+                    {% endif %}
+                    <span class="btn">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn">Next</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <p class="text-lg">You haven't reviewed any books yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
