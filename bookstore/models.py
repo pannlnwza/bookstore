@@ -52,11 +52,12 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
+
 class Customer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     address = models.TextField()
 
@@ -155,3 +156,15 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.customer.first_name} on {self.book.title}"
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="favorited_by")
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'book')  # Ensure a user can only favorite a book once
+
+    def __str__(self):
+        return f"{self.user.username} - {self.book.title}"

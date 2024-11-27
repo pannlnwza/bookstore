@@ -1,0 +1,53 @@
+{% extends 'bookstore/base.html' %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">My Favorites</h1>
+
+{% if favorites %}
+    <div class="overflow-x-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for favorite in favorites %}
+                <div class="card bg-base-100 shadow-xl">
+                    <figure class="px-10 pt-10">
+                        <!-- Use the actual image URL from the Book model -->
+                        <img src="{{ favorite.book.image_url }}" alt="{{ favorite.book.title }}" class="w-52 object-cover">
+                    </figure>
+                    <div class="card-body">
+                        <h2 class="card-title">{{ favorite.book.title }}</h2>
+                        <p class="text-sm text-gray-600">Genre: {{ favorite.book.genre.name | title }}</p>
+                        <p class="text-lg font-bold">{{ favorite.book.price }}</p>
+
+                        <p class="text-sm text-gray-500">{{ favorite.book.product_description|truncatewords:20 }}</p>
+                        <div class="stats shadow mb-4 border-1">
+                            <div class="stat">
+                                <div class="stat-title">Stock</div>
+                                <div class="stat-value text-lg">{{ favorite.book.stock.quantity_in_stock }}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-title">Average Rating</div>
+                                <div class="stat-value text-lg">
+                                    {% if favorite.book.average_rating %}
+                                        {{ favorite.book.average_rating }} / 5
+                                    {% else %}
+                                        No ratings yet
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-actions justify-end">
+                            <a href="{% url 'bookstore:book_detail' favorite.book.id %}" class="btn btn-primary">View Details</a>
+                            <a href="{% url 'bookstore:remove_from_favorites' favorite.book.id %}"
+                               class="btn btn-error"
+                               onclick="return confirm('Are you sure you want to remove this book from your favorites?');">
+                               Remove
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-lg">You have no favorite books yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

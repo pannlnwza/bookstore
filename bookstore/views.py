@@ -4,7 +4,7 @@ from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 
-from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Customer, Review
+from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Customer, Review, Favorite
 from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
@@ -12,7 +12,7 @@ from django.contrib import messages
 from bookstore.forms import SignUpForm, ReviewForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views import generic
-
+from django.db import IntegrityError
 
 
 
@@ -88,17 +88,20 @@ def book_detail(request, book_id):
     reviews = book.reviews.select_related('customer').all()
 
     # Check if the user has purchased this book
+    is_favorited = False
     user_has_purchased = False
     if request.user.is_authenticated:
         customer = Customer.objects.filter(user=request.user).first()
         if customer:
             user_has_purchased = OrderItem.objects.filter(order__customer=customer, book=book).exists()
+            is_favorited = Favorite.objects.filter(user=request.user, book=book).exists()
 
     return render(request, 'bookstore/book_detail.html', {
         'book': book,
         'related_books': related_books,
         'reviews': reviews,
         'user_has_purchased': user_has_purchased,
+        'is_favorited': is_favorited
     })
 
 
@@ -500,35 +503,49 @@ def delete_book(request, book_id):
 
 @login_required
 def add_review(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
-    customer = get_object_or_404(Customer, user=request.user)
+    try:
+        book = get_object_or_404(Book, id=book_id)
 
-    # Check if the user has ordered this book
-    has_ordered_book = OrderItem.objects.filter(
-        order__customer=customer,
-        book=book
-    ).exists()
+        # Validate that the user has purchased the book
+        has_ordered_book = OrderItem.objects.filter(
+            order__customer__user=request.user,
+            book=book
+        ).exists()
 
-    if not has_ordered_book:
-        messages.error(request, "You can only review books you have purchased.")
+        if not has_ordered_book:
+            messages.error(request, "You can only review books you have purchased.")
+            return redirect('bookstore:book_detail', book_id=book_id)
+
+        # Check if a review already exists
+        existing_review = Review.objects.filter(
+            customer__user=request.user,
+            book=book
+        ).first()
+
+        if request.method == 'POST':
+            form = ReviewForm(request.POST, instance=existing_review)  # Edit if exists
+            if form.is_valid():
+                review = form.save(commit=False)
+                review.customer = Customer.objects.get(user=request.user)
+                review.book = book
+                review.save()
+                messages.success(request, "Your review has been submitted.")
+                return redirect('bookstore:book_detail', book_id=book_id)
+            else:
+                messages.error(request, "There was an error with your review. Please try again.")
+        else:
+            form = ReviewForm(instance=existing_review)  # Pre-fill if exists
+
+    except IntegrityError as e:
+        messages.error(request, f"An error occurred: {str(e)}")
         return redirect('bookstore:book_detail', book_id=book_id)
 
-    # Check if the user already reviewed this book
-    existing_review = Review.objects.filter(customer=customer, book=book).first()
-
-    if request.method == 'POST':
-        form = ReviewForm(request.POST, instance=existing_review)  # Edit if exists
-        if form.is_valid():
-            review = form.save(commit=False)
-            review.customer = customer
-            review.book = book
-            review.save()
-            messages.success(request, "Your review has been submitted.")
-            return redirect('bookstore:book_detail', book_id=book_id)
-    else:
-        form = ReviewForm(instance=existing_review)  # Pre-fill if exists
-
-    return render(request, 'bookstore/add_review.html', {'form': form, 'book': book})
+    # Fallback render for form errors or GET requests
+    return render(request, 'bookstore/book_detail.html', {
+        'form': form,
+        'book': book,
+        'reviews': book.reviews.all(),
+    })
 
 
 @login_required
@@ -561,3 +578,51 @@ def update_stock(request, book_id):
         return redirect('bookstore:stock_management')
     messages.error(request, "You are not authorized to view this page.")
     return redirect('bookstore:home')
+
+
+class MyReviewsView(LoginRequiredMixin, generic.ListView):
+    model = Review
+    template_name = 'bookstore/my_reviews.html'
+    context_object_name = 'reviews'
+    paginate_by = 10  # Add pagination if needed
+
+    def get_queryset(self):
+        # Filter reviews for the logged-in user
+        return Review.objects.filter(customer__user=self.request.user).select_related('book').order_by('-created_at')
+
+
+@login_required
+def add_to_favorites(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    favorite, created = Favorite.objects.get_or_create(user=request.user, book=book)
+
+    if created:
+        messages.success(request, f"'{book.title}' has been added to your favorites.")
+    else:
+        messages.info(request, f"'{book.title}' is already in your favorites.")
+
+    return redirect('bookstore:book_detail', book_id=book_id)
+
+
+@login_required
+def remove_from_favorites(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    favorite = Favorite.objects.filter(user=request.user, book=book).first()
+
+    if favorite:
+        favorite.delete()
+        messages.success(request, f"'{book.title}' has been removed from your favorites.")
+    else:
+        messages.info(request, f"'{book.title}' was not in your favorites.")
+
+    return redirect('bookstore:book_detail', book_id=book_id)
+
+
+class FavoritesListView(LoginRequiredMixin, generic.ListView):
+    model = Favorite
+    template_name = 'bookstore/favorites_list.html'
+    context_object_name = 'favorites'
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user).select_related('book')
+
