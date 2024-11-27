@@ -12,7 +12,7 @@
         <h1 class="text-4xl font-bold mb-4">{{ book.title }}</h1>
         <p class="text-xl mb-2">Genre: {{ book.genre.name | title }}</p>
         <p class="text-md mb-2">{{ book.product_description }}</p>
-        <p class="text-2xl font-bold mb-4">{{ book.price_including_tax }}</p>
+        <p class="text-2xl font-bold mb-4">{{ book.price }} ฿</p>
 
         <!-- Book Info Stats -->
         <div class="stats shadow mb-4">
@@ -137,7 +137,6 @@
     {% else %}
         <p class="text-gray-500">You can only review books you have purchased.</p>
     {% endif %}
-</d>
 
 <div class="divider my-8">Related Books</div>
 
@@ -151,7 +150,7 @@
         <div class="card-body">
             <h2 class="card-title">{{ related_book.title }}</h2>
             <p class="text-sm text-gray-600">Genre: {{ related_book.genre.name }}</p>
-            <p class="text-lg font-bold">{{ related_book.price_including_tax }}</p>
+            <p class="text-lg font-bold">{{ related_book.price }} ฿</p>
             <div class="card-actions justify-end">
                 <a href="{% url 'bookstore:book_detail' related_book.id %}" class="btn btn-primary">View Details</a>
             </div>
