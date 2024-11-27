@@ -189,7 +189,7 @@ def add_to_cart(request, book_id):
             cart_item.save()
         else:
             # Set the price_at_time field when the item is first added
-            cart_item.price_at_time = Decimal(book.price_including_tax.replace('£', '').strip())
+            cart_item.price_at_time = book.price
             cart_item.save()
 
         messages.success(request, f'Added {book.title} to your cart')
@@ -209,7 +209,7 @@ def update_quantity(request):
             cart_item.quantity = new_quantity
 
             # Optionally update the price_at_time if the price changes (if needed)
-            cart_item.price_at_time = Decimal(cart_item.book.price_including_tax.replace('£', '').strip())
+            cart_item.price_at_time = Decimal(cart_item.book.price)
 
             cart_item.save()
             messages.success(request, f'Updated quantity of {cart_item.book.title} to {new_quantity}.')
@@ -333,10 +333,8 @@ def add_book(request):
     if request.method == 'POST' and request.user.is_superuser:
         title = request.POST.get('title')
         genre_name = request.POST.get('genre')
-        price_including_tax = request.POST.get('price_including_tax')
-        price_excluding_tax = request.POST.get('price_excluding_tax')
+        price = request.POST.get('price')
         product_description = request.POST.get('product_description')
-        review_rating = request.POST.get('review_rating')
         image_url = request.POST.get('image_url')
         product_page_url = request.POST.get('product_page_url')
         universal_product_code = request.POST.get('universal_product_code')
@@ -348,10 +346,8 @@ def add_book(request):
         book = Book.objects.create(
             title=title,
             genre=genre,
-            price_including_tax=price_including_tax,
-            price_excluding_tax=price_excluding_tax,
+            price=price,
             product_description=product_description,
-            review_rating=review_rating,
             image_url=image_url,
             product_page_url=product_page_url,
             universal_product_code=universal_product_code
@@ -371,8 +367,7 @@ def edit_book(request, book_id):
         if request.method == 'POST':
             # Update book attributes
             book.title = request.POST.get('title', book.title)
-            book.price_including_tax = request.POST.get('price_including_tax', book.price_including_tax)
-            book.price_excluding_tax = request.POST.get('price_excluding_tax', book.price_excluding_tax)
+            book.price = request.POST.get('price_including_tax', book.price)
             book.product_description = request.POST.get('product_description', book.product_description)
             book.review_rating = request.POST.get('review_rating', book.review_rating)
             book.image_url = request.POST.get('image_url', book.image_url)
@@ -400,3 +395,24 @@ def delete_book(request, book_id):
 
     messages.error(request, "You are not authorized to view this page.")
     return redirect('bookstore:home')
+
+
+def update_stock(request, book_id):
+    if request.method == 'POST':
+        book = get_object_or_404(Book, id=book_id)
+        stock = book.stock
+        new_quantity = request.POST.get('quantity_in_stock')
+
+        if new_quantity is not None:
+            try:
+                stock.quantity_in_stock = int(new_quantity)
+                stock.save()
+                messages.success(request, f"Stock for {book.title} updated successfully!")
+            except ValueError:
+                messages.error(request, "Invalid quantity. Please enter a valid number.")
+        else:
+            messages.error(request, "No quantity provided.")
+
+        return redirect('bookstore:stock_management')  # Redirect to the stock management page
+
+    return redirect('bookstore:stock_management')
