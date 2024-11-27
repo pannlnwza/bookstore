@@ -33,7 +33,6 @@ class HomeView(generic.TemplateView):
 def book_list(request):
     # Retrieve and validate query parameters
     selected_genres = request.GET.getlist('genres')  # Multi-select genres
-    genre_id = request.GET.get('genre')  # Single genre selection
     search_query = request.GET.get('search', '')  # Search term
     max_price = request.GET.get('max_price')  # Max price filter
     sort_by = request.GET.get('sort_by', 'popularity')  # Sorting option with default
@@ -44,9 +43,6 @@ def book_list(request):
     # Filter by genre
     if selected_genres:
         books = books.filter(genre__name__in=selected_genres)
-
-    if genre_id:
-        books = books.filter(genre__id=genre_id)
 
     # Perform search for books matching the query
     if search_query:
@@ -97,7 +93,6 @@ def book_list(request):
     return render(request, 'bookstore/book_list.html', {
         'page_obj': page_obj,
         'genres': genres,
-        'current_genre': genre_id,
         'selected_genres': selected_genres,
         'search_query': search_query,
         'max_price': max_price,
