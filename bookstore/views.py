@@ -21,7 +21,8 @@ class HomeView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['featured_books'] = Book.objects.select_related('stock').all()[:6]
+        context['featured_books'] = Book.objects.select_related('stock').all()[:10]
+        context['top_books'] = Book.objects.select_related('genre').order_by('-sales_count')[:10]
         context['genre'] = Genre.objects.all()
         return context
 
