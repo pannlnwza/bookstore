@@ -7,6 +7,7 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
+
 class Book(models.Model):
     product_page_url = models.URLField()
     universal_product_code = models.CharField(max_length=255)
@@ -31,6 +32,7 @@ class Customer(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     order_date = models.DateField(auto_now_add=True)
@@ -38,6 +40,7 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.id}"
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
@@ -47,6 +50,7 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.book.title}"
+
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
@@ -61,6 +65,7 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment for Order #{self.order.id}"
+
 
 class Stock(models.Model):
     book = models.OneToOneField(Book, on_delete=models.CASCADE, related_name="stock")
@@ -82,6 +87,7 @@ class Cart(models.Model):
     def total(self):
         return sum(item.subtotal for item in self.cartitem_set.all())
 
+
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
@@ -94,3 +100,18 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.book.title}"
+
+
+class Review(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="reviews")
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="reviews")
+    review_message = models.TextField(max_length=1000)  # Increased length for detailed reviews
+    rating = models.PositiveSmallIntegerField()  # Typically between 1 and 5
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('customer', 'book')  # Ensures one review per customer per book
+        ordering = ['-created_at']  # Newest reviews appear first
+
+    def __str__(self):
+        return f"Review by {self.customer.first_name} on {self.book.title}"
