@@ -22,5 +22,6 @@ urlpatterns = [
     path('add-book/', views.AddView.as_view(), name='add'),
     path('book/<int:book_id>/add-review/', views.add_review, name='add_review'),
     path('review/<int:review_id>/delete/', views.delete_review, name='delete_review'),
+    path('update-stock/<int:book_id>/', views.update_stock, name='update_stock'),
 
 ]
