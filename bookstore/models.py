@@ -126,6 +126,7 @@ class Review(models.Model):
     review_message = models.TextField(max_length=1000)  # Increased length for detailed reviews
     rating = models.PositiveSmallIntegerField()  # Typically between 1 and 5
     created_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=50)
 
     class Meta:
         unique_together = ('user', 'book')  # Ensures one review per user per book
