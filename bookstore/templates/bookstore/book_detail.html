@@ -71,7 +71,7 @@
                 {% for review in reviews %}
                     <li class="mb-4">
                         <div class="flex items-center mb-2">
-                        <p class="text-lg mr-2"><strong>{{ review.name }}</strong></p>
+                        <p class="text-lg mr-2"><strong>{{ review.user.username }}</strong></p>
 
                             <!-- Star Rating Display -->
                             <div class="rating rating-sm">
@@ -125,9 +125,9 @@
         <!-- User's Name -->
         <div class="form-control mb-4">
             <label class="label">
-                <span class="label-text">Your Name</span>
+                <span class="label-text">Your Name (Optional)</span>
             </label>
-            <input type="text" name="name" class="input input-bordered w-full" placeholder="Your name or alias" value="{{ form.name.value|default_if_none:'Anonymous' }}">
+            <input type="text" name="name" class="input input-bordered w-full" placeholder="Your name or alias" value="{{ form.name }}">
         </div>
 
         <!-- Review Text -->
