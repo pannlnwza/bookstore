@@ -211,7 +211,7 @@ def add_to_cart(request, book_id):
             cart_item.quantity += quantity
             cart_item.save()
         else:
-            # Set the price_at_time field when the item is first added
+            cart_item.quantity = quantity
             cart_item.price_at_time = book.price
             cart_item.save()
 
