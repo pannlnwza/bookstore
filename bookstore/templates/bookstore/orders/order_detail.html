@@ -23,7 +23,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in order.order_items.all %}
+                                {% for item in order.transaction_items.all %}
                                 <tr>
                                 <td><img src="{{ item.book.get_image_url }}" alt="{{ book.title }}" class="w-16 object-cover"></td>
                                     <td>
@@ -42,7 +42,7 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="3" class="text-right font-bold">Total:</td>
-                                    <td class="font-bold">{{ order.total_amount }} ฿</td>
+                                    <td class="font-bold">{{ order.total }} ฿</td>
                                 </tr>
                             </tfoot>
                         </table>

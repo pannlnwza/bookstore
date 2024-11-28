@@ -39,7 +39,6 @@ class Command(BaseCommand):
                 price=price_including_tax_thb,
                 product_description=item.get('product_description'),
                 genre=category,
-                review_rating=item.get('review_rating'),
                 image_url=item.get('image_url'),
             )
 
