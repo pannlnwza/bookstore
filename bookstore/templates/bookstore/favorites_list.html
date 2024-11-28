@@ -10,7 +10,7 @@
                 <div class="card bg-base-100 shadow-xl">
                     <figure class="px-10 pt-10">
                         <!-- Use the actual image URL from the Book model -->
-                        <img src="{{ favorite.book.image_url }}" alt="{{ favorite.book.title }}" class="w-52 object-cover">
+                        <img src="{{ favorite.book.get_image_url }}" alt="{{ favorite.book.title }}" class="w-52 object-cover">
                     </figure>
                     <div class="card-body">
                         <h2 class="card-title">{{ favorite.book.title }}</h2>
