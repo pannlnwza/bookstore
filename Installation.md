@@ -1,5 +1,4 @@
-# Installation Instructions for KU Polls
-
+# Installation Instructions
 1. Clone the repository
    ```
    git clone https://github.com/pannlnwza/bookstore.git
