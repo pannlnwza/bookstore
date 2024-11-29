@@ -11,7 +11,6 @@ class Genre(models.Model):
 
 
 class Book(models.Model):
-    product_page_url = models.URLField(blank=True, null=True)
     universal_product_code = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
     price = models.FloatField(default=0)
