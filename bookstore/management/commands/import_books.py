@@ -33,7 +33,6 @@ class Command(BaseCommand):
                 price_including_tax_thb = 0.0
 
             book = Book.objects.create(
-                product_page_url=item.get('product_page_url'),
                 universal_product_code=item.get('universal_product_code'),
                 title=item.get('title'),
                 price=price_including_tax_thb,
