@@ -92,6 +92,7 @@ class TransactionItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.book.title} in Transaction {self.transaction.id}"
 
+
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
         ('Credit Card', 'Credit Card'),
