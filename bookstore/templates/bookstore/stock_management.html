@@ -8,6 +8,26 @@
         <div class="mb-6 flex flex-wrap gap-1 items-center">
             <!-- Search by Title -->
             <form method="GET" class="join">
+                <!-- Include hidden fields for other filters -->
+                {% if request.GET.genres %}
+                    {% for genre in selected_genres %}
+                        <input type="hidden" name="genres" value="{{ genre }}">
+                    {% endfor %}
+                {% endif %}
+                {% if request.GET.min_price %}
+                    <input type="hidden" name="min_price" value="{{ request.GET.min_price }}">
+                {% endif %}
+                {% if request.GET.max_price %}
+                    <input type="hidden" name="max_price" value="{{ request.GET.max_price }}">
+                {% endif %}
+                {% if request.GET.min_stock %}
+                    <input type="hidden" name="min_stock" value="{{ request.GET.min_stock }}">
+                {% endif %}
+                {% if request.GET.max_stock %}
+                    <input type="hidden" name="max_stock" value="{{ request.GET.max_stock }}">
+                {% endif %}
+
+                <!-- Search input field -->
                 <input type="text" name="search" placeholder="Search by Title"
                        class="input input-bordered join-item"
                        value="{{ request.GET.search }}"/>
@@ -17,7 +37,6 @@
                               d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z"
                               clip-rule="evenodd"/>
                     </svg>
-
                 </button>
             </form>
 
@@ -25,34 +44,25 @@
             <div class="dropdown">
                 <div tabindex="0" role="button" class="btn m-1">
                     Genres
-                    {% with selected_genres=request.GET.getlist %}
-                        {% if selected_genres.genres %}
-                            : {{ selected_genres.genres|join:", " }}
-                        {% endif %}
-                    {% endwith %}
+                    {% if selected_genres %}
+                        : {{ selected_genres|join:", " }}
+                    {% endif %}
                 </div>
                 <div tabindex="0" class="dropdown-content z-[1] card card-compact shadow bg-base-100 w-72">
                     <form method="GET" class="card-body flex flex-col">
-                        {% if request.GET.search %}
-                            <input type="hidden" name="search" value="{{ request.GET.search }}">
+                        {% if search %}
+                            <input type="hidden" name="search" value="{{ search }}">
                         {% endif %}
-
                         <div class="form-control overflow-y-auto max-h-[300px] pr-2">
                             {% for genre in genres %}
                                 <label class="label cursor-pointer">
                                     <span class="label-text">{{ genre.name|title }}</span>
-                                    <input type="checkbox"
-                                           name="genres"
-                                           value="{{ genre.name }}"
+                                    <input type="checkbox" name="genres" value="{{ genre.name }}"
                                            class="checkbox checkbox-primary"
-                                            {% with selected_genres=request.GET.getlist %}
-                                           {% if genre.name in selected_genres.genres %}checked{% endif %}
-                                            {% endwith %}
-                                    />
+                                           {% if genre.name in selected_genres %}checked{% endif %}/>
                                 </label>
                             {% endfor %}
                         </div>
-
                         <div class="form-control mt-4 sticky bottom-0 bg-base-100 pt-2">
                             <button type="submit" class="btn btn-primary">Apply Genre Filter</button>
                         </div>
@@ -64,28 +74,25 @@
             <div class="dropdown">
                 <div tabindex="0" role="button" class="btn m-1">
                     Price Range
-                    {% if request.GET.min_price or request.GET.max_price %}
-                        : {{ request.GET.min_price|default:'0' }} ฿ - {{ request.GET.max_price|default:'∞' }} ฿
+                    {% if min_price or max_price %}
+                        : {{ min_price|default:'0' }} ฿ - {{ max_price|default:'∞' }} ฿
                     {% endif %}
                 </div>
                 <div tabindex="0" class="dropdown-content z-[1] card card-compact p-4 shadow bg-base-100">
                     <form method="GET" class="card-body space-y-4">
-                        {% if request.GET.search %}
-                            <input type="hidden" name="search" value="{{ request.GET.search }}">
+                        {% if search %}
+                            <input type="hidden" name="search" value="{{ search }}">
                         {% endif %}
-                        {% with selected_genres=request.GET.getlist %}
-                            {% for genre in selected_genres.genres %}
-                                <input type="hidden" name="genres" value="{{ genre }}">
-                            {% endfor %}
-                        {% endwith %}
+                        {% for genre in selected_genres %}
+                            <input type="hidden" name="genres" value="{{ genre }}">
+                        {% endfor %}
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text">Minimum Price</span>
                             </label>
                             <input type="number" name="min_price" placeholder="Min Price"
                                    class="input input-bordered"
-                                   value="{{ request.GET.min_price }}"
-                                   min="0" step="0.01"/>
+                                   value="{{ min_price }}" min="0" step="0.01"/>
                         </div>
                         <div class="form-control">
                             <label class="label">
@@ -93,8 +100,7 @@
                             </label>
                             <input type="number" name="max_price" placeholder="Max Price"
                                    class="input input-bordered"
-                                   value="{{ request.GET.max_price }}"
-                                   min="0" step="0.01"/>
+                                   value="{{ max_price }}" min="0" step="0.01"/>
                         </div>
                         <div class="form-control mt-4">
                             <button type="submit" class="btn btn-primary">Apply Price Filter</button>
@@ -107,25 +113,23 @@
             <div class="dropdown">
                 <div tabindex="0" role="button" class="btn m-1">
                     Stock Range
-                    {% if request.GET.min_stock or request.GET.max_stock %}
-                        : {{ request.GET.min_stock|default:'0' }} - {{ request.GET.max_stock|default:'∞' }}
+                    {% if min_stock or max_stock %}
+                        : {{ min_stock|default:'0' }} - {{ max_stock|default:'∞' }}
                     {% endif %}
                 </div>
                 <div tabindex="0" class="dropdown-content z-[1] card card-compact p-4 shadow bg-base-100">
                     <form method="GET" class="card-body space-y-4">
-                        {% if request.GET.search %}
-                            <input type="hidden" name="search" value="{{ request.GET.search }}">
+                        {% if search %}
+                            <input type="hidden" name="search" value="{{ search }}">
                         {% endif %}
-                        {% with selected_genres=request.GET.getlist %}
-                            {% for genre in selected_genres.genres %}
-                                <input type="hidden" name="genres" value="{{ genre }}">
-                            {% endfor %}
-                        {% endwith %}
-                        {% if request.GET.min_price %}
-                            <input type="hidden" name="min_price" value="{{ request.GET.min_price }}">
+                        {% for genre in selected_genres %}
+                            <input type="hidden" name="genres" value="{{ genre }}">
+                        {% endfor %}
+                        {% if min_price %}
+                            <input type="hidden" name="min_price" value="{{ min_price }}">
                         {% endif %}
-                        {% if request.GET.max_price %}
-                            <input type="hidden" name="max_price" value="{{ request.GET.max_price }}">
+                        {% if max_price %}
+                            <input type="hidden" name="max_price" value="{{ max_price }}">
                         {% endif %}
                         <div class="form-control">
                             <label class="label">
@@ -133,8 +137,7 @@
                             </label>
                             <input type="number" name="min_stock" placeholder="Min Stock"
                                    class="input input-bordered"
-                                   value="{{ request.GET.min_stock }}"
-                                   min="0"/>
+                                   value="{{ min_stock }}" min="0"/>
                         </div>
                         <div class="form-control">
                             <label class="label">
@@ -142,8 +145,7 @@
                             </label>
                             <input type="number" name="max_stock" placeholder="Max Stock"
                                    class="input input-bordered"
-                                   value="{{ request.GET.max_stock }}"
-                                   min="0"/>
+                                   value="{{ max_stock }}" min="0"/>
                         </div>
                         <div class="form-control mt-4">
                             <button type="submit" class="btn btn-primary">Apply Stock Filter</button>
@@ -151,7 +153,6 @@
                     </form>
                 </div>
             </div>
-
             <!-- Clear Filters Button -->
             <a href="{% url 'bookstore:stock_management' %}" class="btn btn-ghost">
                 Clear Filters

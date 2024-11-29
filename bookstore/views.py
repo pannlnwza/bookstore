@@ -5,7 +5,7 @@ from django.db import transaction
 from django.db.models import Sum, Avg, Count
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Book, Genre, Order, OrderItem, Stock, Cart, CartItem, Payment, Review, Favorite
+from .models import Book, Genre, Transaction, TransactionItem, Stock, Review, Favorite, Payment
 from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
@@ -25,10 +25,10 @@ class HomeView(generic.TemplateView):
                                        .annotate(review_count=Count('reviews'))
                                        .order_by('-review_count')[:10])
         context['best_sell_books'] = (Book.objects.select_related('genre')
-                                      .annotate(total_sales=Sum('order_items__quantity'))
+                                      .annotate(total_sales=Sum('transaction_items__quantity'))
                                       .order_by('-total_sales')[:10])
         context['genre'] = Genre.objects.all()
-        context['order_items'] = OrderItem.objects.all()
+        context['order_items'] = TransactionItem.objects.all()
         return context
 
 
@@ -64,7 +64,7 @@ def book_list(request):
             pass
 
     if sort_by == 'popularity':
-        books = books.annotate(total_sales=Sum('order_items__quantity')).order_by('-total_sales')
+        books = books.annotate(total_sales=Sum('transaction_items__quantity')).order_by('-total_sales')
     elif sort_by == 'rating':
         books = books.annotate(avg_rating=Avg('reviews__rating')).order_by('-avg_rating')
     elif sort_by == 'reviews':
@@ -108,7 +108,7 @@ def book_detail(request, book_id):
     is_favorited = False
     user_has_purchased = False
     if request.user.is_authenticated:
-        user_has_purchased = OrderItem.objects.filter(order__user=request.user, book=book).exists()
+        user_has_purchased = TransactionItem.objects.filter(transaction__user=request.user, book=book).exists()
         is_favorited = Favorite.objects.filter(user=request.user, book=book).exists()
 
     return render(request, 'bookstore/book_detail.html', {
@@ -121,66 +121,62 @@ def book_detail(request, book_id):
 
 
 @login_required
-@login_required
 def place_order(request):
     if request.method == 'POST':
         try:
-            cart = get_object_or_404(Cart, user=request.user)
-            cart_items = CartItem.objects.filter(cart=cart)
+            # Get the user's active cart
+            cart = get_object_or_404(Transaction, user=request.user, status='cart')
+            cart_items = TransactionItem.objects.filter(transaction=cart)
 
+            # Check if the cart is empty
             if not cart_items.exists():
                 messages.error(request, "Your cart is empty.")
                 return redirect('bookstore:cart')
 
+            # Check stock availability for each item in the cart
             for cart_item in cart_items:
                 stock = Stock.objects.get(book=cart_item.book)
                 if cart_item.quantity > stock.quantity_in_stock:
                     messages.error(request, f"Insufficient stock for {cart_item.book.title}.")
                     return redirect('bookstore:cart')
 
+            # Get user input for order details
             full_name = request.POST.get('full_name')
             address = request.POST.get('address')
             payment_method = request.POST.get('payment_method')
             phone = request.POST.get('phone')
 
+            # Validate that all required fields are filled
             if not all([full_name, address, payment_method]):
                 messages.error(request, "Please fill in all required fields.")
                 return redirect('bookstore:cart')
 
+            # Place the order inside a transaction block
             with transaction.atomic():
-                order = Order.objects.create(
-                    user=request.user,
-                    total_amount=cart.total,
-                    full_name=full_name,
-                    address=address,
-                    phone=phone,
-                )
+                # Update cart status to confirmed
+                cart.full_name = full_name
+                cart.address = address
+                cart.phone = phone
+                cart.status = 'confirmed'
+                cart.save()
 
+                # Deduct stock for each item in the cart
                 for cart_item in cart_items:
-                    OrderItem.objects.create(
-                        order=order,
-                        book=cart_item.book,
-                        quantity=cart_item.quantity,
-                        price_at_time=cart_item.price_at_time
-                    )
-
                     stock = Stock.objects.get(book=cart_item.book)
                     stock.quantity_in_stock -= cart_item.quantity
                     stock.save()
 
+                # Record payment
                 Payment.objects.create(
-                    order=order,
+                    transaction=cart,
                     payment_method=payment_method,
                     amount=cart.total
                 )
 
-                cart_items.delete()
-                cart.delete()
+            messages.success(request, f"Order #{cart.id} placed successfully!")
+            return redirect('bookstore:order_detail', order_id=cart.id)
 
-            messages.success(request, f"Order #{order.id} placed successfully!")
-            return redirect('bookstore:order_detail', order_id=order.id)
-
-        except Cart.DoesNotExist:
+        except Transaction.DoesNotExist:
             messages.error(request, "No active cart found.")
             return redirect('bookstore:cart')
 
@@ -196,85 +192,90 @@ def add_to_cart(request, book_id):
         book = get_object_or_404(Book, id=book_id)
         quantity = int(request.POST.get('quantity', 1))
 
+        # Check stock availability
         if quantity > book.stock.quantity_in_stock:
             messages.error(request, f'Only {book.stock.quantity_in_stock} items in stock.')
             return redirect('bookstore:book_detail', book_id=book_id)
 
-        # Get the user's cart, or create one if it doesn't exist
-        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart, created = Transaction.objects.get_or_create(
+            user=request.user,
+            status='cart'
+        )
 
-        # Try to get the cart item or create it if it doesn't exist
-        cart_item, created = CartItem.objects.get_or_create(cart=cart, book=book)
+        # Try to get the transaction item or create it if it doesn't exist
+        transaction_item, created = TransactionItem.objects.get_or_create(
+            transaction=cart,
+            book=book
+        )
 
         # If the item already exists in the cart, update the quantity
         if not created:
-            cart_item.quantity += quantity
-            cart_item.save()
+            transaction_item.quantity += quantity
         else:
-            cart_item.quantity = quantity
-            cart_item.price_at_time = book.price
-            cart_item.save()
+            transaction_item.quantity = quantity
+            transaction_item.price_at_time = book.price
+
+        transaction_item.save()
 
         messages.success(request, f'Added {book.title} to your cart')
     return redirect('bookstore:book_detail', book_id=book_id)
 
+@login_required
 def update_quantity(request):
     if request.method == 'POST':
-        cart_item_id = request.POST.get('cart_item_id')  # Get the cart item ID
+        transaction_item_id = request.POST.get('cart_item_id')  # Get the transaction item ID
         new_quantity = int(request.POST.get('quantity'))  # Get the new quantity
 
-        cart_item = get_object_or_404(CartItem, id=cart_item_id)
+        transaction_item = get_object_or_404(TransactionItem, id=transaction_item_id)
 
         # Check if the quantity is valid and does not exceed available stock
-        if new_quantity > cart_item.book.stock.quantity_in_stock:
-            messages.error(request, f'Only {cart_item.book.stock.quantity_in_stock} items in stock.')
+        if new_quantity > transaction_item.book.stock.quantity_in_stock:
+            messages.error(request, f'Only {transaction_item.book.stock.quantity_in_stock} items in stock.')
         else:
-            cart_item.quantity = new_quantity
+            transaction_item.quantity = new_quantity
 
-            # Optionally update the price_at_time if the price changes (if needed)
-            cart_item.price_at_time = Decimal(cart_item.book.price)
+            # Optionally update the price_at_time to reflect any price changes (if needed)
+            transaction_item.price_at_time = Decimal(transaction_item.book.price)
 
-            cart_item.save()
-            messages.success(request, f'Updated quantity of {cart_item.book.title} to {new_quantity}.')
+            transaction_item.save()
+            messages.success(request, f'Updated quantity of {transaction_item.book.title} to {new_quantity}.')
 
     return redirect('bookstore:cart')
 
+@login_required
 def remove_cart(request, cart_item_id):
     if request.method == 'POST':
-        cart_item = get_object_or_404(CartItem, id=cart_item_id)
-        cart_item.delete()
-        messages.success(request, f'Removed')
+        transaction_item = get_object_or_404(TransactionItem, id=cart_item_id)
+        transaction_item.delete()
+        messages.success(request, f'Removed {transaction_item.book.title} from your cart.')
     return redirect('bookstore:cart')
 
-
-class ViewCart(generic.TemplateView, LoginRequiredMixin):
+class ViewCart(LoginRequiredMixin, generic.TemplateView):
     template_name = 'bookstore/cart.html'
 
     def get_context_data(self, **kwargs):
-        # Ensure the user is authenticated
-        if self.request.user.is_authenticated:
-            # Retrieve the user's cart
-            cart = Cart.objects.filter(user=self.request.user).first()
+        # Ensure the user is authenticated and retrieve their cart transaction
+        transaction = Transaction.objects.filter(user=self.request.user, status="cart").first()
 
-            cart_items = []
-            total = Decimal('0.00')
+        transaction_items = []
+        total = Decimal('0.00')
 
-            if cart:
-                # Loop through each cart item and accumulate the total
-                for item in cart.cartitem_set.all():
-                    cart_items.append({
-                        'id': item.id,
-                        'book': item.book,
-                        'quantity': item.quantity,
-                        'subtotal': item.subtotal
-                    })
-                    total += item.subtotal
-            context = super().get_context_data(**kwargs)
+        if transaction:
+            # Loop through each transaction item and calculate the total
+            for item in transaction.transaction_items.all():
+                transaction_items.append({
+                    'id': item.id,
+                    'book': item.book,
+                    'quantity': item.quantity,
+                    'subtotal': item.subtotal  # Assuming TransactionItem has a subtotal property
+                })
+                total += item.subtotal
 
-            context['cart_items'] = cart_items
-            context['total'] = total
+        context = super().get_context_data(**kwargs)
+        context['cart_items'] = transaction_items
+        context['total'] = total
 
-            return context
+        return context
 
 def login(request):
     if request.method == 'POST':
@@ -311,22 +312,22 @@ class OrderListView(LoginRequiredMixin, generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Annotate orders with item count
-        orders = (
-            Order.objects.filter(user=self.request.user)
-            .annotate(item_count=Count('order_items'))  # Annotate with count of OrderItems
-            .order_by('-order_date')
+        # Annotate transactions with item count
+        transactions = (
+            Transaction.objects.filter(user=self.request.user, status='confirmed')  # Filter for confirmed transactions
+            .annotate(item_count=Count('transaction_items'))  # Annotate with count of TransactionItems
+            .order_by('-created_at')  # Sort by creation date
         )
 
-        # Return empty page if no orders
-        if not orders.exists():
+        # Return empty page if no transactions
+        if not transactions.exists():
             context['page_obj'] = None
             return context
 
-        # Filter by Order ID
-        order_id = self.request.GET.get('order_id', '').strip()
-        if order_id:
-            orders = orders.filter(id=order_id)
+        # Filter by Transaction ID
+        transaction_id = self.request.GET.get('order_id', '').strip()
+        if transaction_id:
+            transactions = transactions.filter(id=transaction_id)
 
         # Filter by Date Range
         start_date = self.request.GET.get('start_date')
@@ -334,24 +335,24 @@ class OrderListView(LoginRequiredMixin, generic.TemplateView):
 
         if start_date:
             start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-            orders = orders.filter(order_date__gte=start_date)
+            transactions = transactions.filter(created_at__date__gte=start_date)
 
         if end_date:
             end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-            orders = orders.filter(order_date__lte=end_date)
+            transactions = transactions.filter(created_at__date__lte=end_date)
 
         # Filter by number of items (min_items and max_items)
         min_items = self.request.GET.get('min_items')
         max_items = self.request.GET.get('max_items')
 
         if min_items:
-            orders = orders.filter(item_count__gte=int(min_items))
+            transactions = transactions.filter(item_count__gte=int(min_items))
 
         if max_items:
-            orders = orders.filter(item_count__lte=int(max_items))
+            transactions = transactions.filter(item_count__lte=int(max_items))
 
         # Handle pagination
-        paginator = Paginator(orders, 5)  # Show 5 orders per page
+        paginator = Paginator(transactions, 5)  # Show 5 transactions per page
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -369,13 +370,19 @@ class OrderListView(LoginRequiredMixin, generic.TemplateView):
 
 
 class OrderDetailView(LoginRequiredMixin, generic.TemplateView):
-    model = Order
-    template_name = 'bookstore/orders/order_detail.html'
+    model = Transaction
+    template_name = 'bookstore/orders/order_detail.html'  # Reused the same template name
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        order_id = context['order_id']
-        order = get_object_or_404(Order, id=order_id)
+
+        # Use the same context variable 'order_id' for consistency
+        order_id = context.get('order_id') or kwargs.get('order_id')
+        order = get_object_or_404(
+            Transaction, id=order_id, user=self.request.user
+        )  # Ensure the transaction belongs to the current user
+
+        # Add the transaction to the context using the same key 'order'
         context['order'] = order
         return context
 
@@ -544,9 +551,9 @@ def add_review(request, book_id):
     try:
         book = get_object_or_404(Book, id=book_id)
 
-        # Validate that the user has purchased the book
-        has_ordered_book = OrderItem.objects.filter(
-            order__user=request.user,
+        has_ordered_book = TransactionItem.objects.filter(
+            transaction__user=request.user,
+            transaction__status='confirmed',
             book=book
         ).exists()
 
@@ -554,14 +561,15 @@ def add_review(request, book_id):
             messages.error(request, "You can only review books you have purchased.")
             return redirect('bookstore:book_detail', book_id=book_id)
 
-        # Check if a review already exists
+        # Check if a review already exists for the user and book
         existing_review = Review.objects.filter(
             user=request.user,
             book=book
         ).first()
 
+        # Handle form submission
         if request.method == 'POST':
-            form = ReviewForm(request.POST, instance=existing_review)  # Edit if exists
+            form = ReviewForm(request.POST, instance=existing_review)  # Edit if review exists
             if form.is_valid():
                 review = form.save(commit=False)
                 review.user = request.user
@@ -572,12 +580,13 @@ def add_review(request, book_id):
             else:
                 messages.error(request, "There was an error with your review. Please try again.")
         else:
-            form = ReviewForm(instance=existing_review)  # Pre-fill if exists
+            form = ReviewForm(instance=existing_review)  # Pre-fill form if review exists
 
     except IntegrityError as e:
         messages.error(request, f"An error occurred: {str(e)}")
         return redirect('bookstore:book_detail', book_id=book_id)
 
+    # Render the template with the review form and book details
     return render(request, 'bookstore/book_detail.html', {
         'form': form,
         'book': book,

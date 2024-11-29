@@ -11,13 +11,11 @@ class Genre(models.Model):
 
 
 class Book(models.Model):
-    product_page_url = models.URLField(blank=True, null=True)
     universal_product_code = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
     price = models.FloatField(default=0)
     product_description = models.TextField()
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    review_rating = models.CharField(max_length=50)
     image_url = models.URLField(blank=True, null=True)
     image = models.ImageField(upload_to='book_images/', blank=True, null=True)
     sales_count = models.PositiveIntegerField(default=0)
@@ -42,47 +40,10 @@ class Book(models.Model):
         return None
 
     def get_sale_count(self):
-        return self.order_items.count()
+        return self.transaction_items.count()
 
     def __str__(self):
         return self.title
-
-
-class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    order_date = models.DateField(auto_now_add=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    address = models.TextField()
-    full_name = models.TextField()
-    phone = models.CharField(max_length=20, blank=True, null=True)
-
-    def __str__(self):
-        return f"Order #{self.id}"
-
-
-class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="order_items")
-    quantity = models.PositiveIntegerField()
-    price_at_time = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.quantity} x {self.book.title}"
-
-
-class Payment(models.Model):
-    PAYMENT_METHOD_CHOICES = [
-        ('Credit Card', 'Credit Card'),
-        ('PayPal', 'PayPal'),
-    ]
-
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="payment")
-    payment_date = models.DateField(auto_now_add=True)
-    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"Payment for Order #{self.order.id}"
 
 
 class Stock(models.Model):
@@ -93,22 +54,34 @@ class Stock(models.Model):
         return f"Stock for {self.book.title}: {self.quantity_in_stock}"
 
 
-class Cart(models.Model):
+class Transaction(models.Model):
+    STATUS_CHOICES = [
+        ("cart", "Cart"),
+        ("confirmed", "Confirmed Order"),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="cart")
+    address = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=10, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"Cart {self.id} for {self.user.username}"
+    @property
+    def is_cart(self):
+        return self.status == "CART"
 
     @property
     def total(self):
-        return sum(item.subtotal for item in self.cartitem_set.all())
+        return sum(item.subtotal for item in self.transaction_items.all())
+
+    def __str__(self):
+        return f"Transaction {self.id} - {self.get_status_display()} for {self.user.username}"
 
 
-class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+class TransactionItem(models.Model):
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name="transaction_items")
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="transaction_items")
     quantity = models.PositiveIntegerField(default=1)
     price_at_time = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
 
@@ -117,7 +90,21 @@ class CartItem(models.Model):
         return (self.price_at_time or 0) * self.quantity
 
     def __str__(self):
-        return f"{self.quantity} x {self.book.title}"
+        return f"{self.quantity} x {self.book.title} in Transaction {self.transaction.id}"
+
+class Payment(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('Credit Card', 'Credit Card'),
+        ('PayPal', 'PayPal'),
+    ]
+
+    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name="payment")
+    payment_date = models.DateField(auto_now_add=True)
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Payment for Order #{self.transaction.id}"
 
 
 class Review(models.Model):

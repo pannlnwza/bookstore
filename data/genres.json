@@ -1,0 +1,352 @@
+[
+{
+    "model": "bookstore.genre",
+    "pk": 1,
+    "fields": {
+        "name": "crime"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 2,
+    "fields": {
+        "name": "short stories"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 3,
+    "fields": {
+        "name": "music"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 4,
+    "fields": {
+        "name": "religion"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 5,
+    "fields": {
+        "name": "science fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 6,
+    "fields": {
+        "name": "psychology"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 7,
+    "fields": {
+        "name": "philosophy"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 8,
+    "fields": {
+        "name": "travel"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 9,
+    "fields": {
+        "name": "romance"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 10,
+    "fields": {
+        "name": "christian fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 11,
+    "fields": {
+        "name": "spirituality"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 12,
+    "fields": {
+        "name": "humor"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 13,
+    "fields": {
+        "name": "poetry"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 14,
+    "fields": {
+        "name": "business"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 15,
+    "fields": {
+        "name": "contemporary"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 16,
+    "fields": {
+        "name": "childrens"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 17,
+    "fields": {
+        "name": "horror"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 18,
+    "fields": {
+        "name": "health"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 19,
+    "fields": {
+        "name": "sequential art"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 20,
+    "fields": {
+        "name": "food and drink"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 21,
+    "fields": {
+        "name": "history"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 22,
+    "fields": {
+        "name": "parenting"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 23,
+    "fields": {
+        "name": "novels"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 24,
+    "fields": {
+        "name": "politics"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 25,
+    "fields": {
+        "name": "historical"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 26,
+    "fields": {
+        "name": "nonfiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 27,
+    "fields": {
+        "name": "erotica"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 28,
+    "fields": {
+        "name": "thriller"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 29,
+    "fields": {
+        "name": "cultural"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 30,
+    "fields": {
+        "name": "fantasy"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 31,
+    "fields": {
+        "name": "biography"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 32,
+    "fields": {
+        "name": "self help"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 33,
+    "fields": {
+        "name": "young adult"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 34,
+    "fields": {
+        "name": "womens fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 35,
+    "fields": {
+        "name": "academic"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 36,
+    "fields": {
+        "name": "add a comment"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 37,
+    "fields": {
+        "name": "art"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 38,
+    "fields": {
+        "name": "new adult"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 39,
+    "fields": {
+        "name": "paranormal"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 40,
+    "fields": {
+        "name": "suspense"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 41,
+    "fields": {
+        "name": "historical fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 42,
+    "fields": {
+        "name": "fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 43,
+    "fields": {
+        "name": "classics"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 44,
+    "fields": {
+        "name": "default"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 45,
+    "fields": {
+        "name": "sports and games"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 46,
+    "fields": {
+        "name": "christian"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 47,
+    "fields": {
+        "name": "mystery"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 48,
+    "fields": {
+        "name": "adult fiction"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 49,
+    "fields": {
+        "name": "science"
+    }
+},
+{
+    "model": "bookstore.genre",
+    "pk": 50,
+    "fields": {
+        "name": "autobiography"
+    }
+}
+]
