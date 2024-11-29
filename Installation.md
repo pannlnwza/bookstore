@@ -36,7 +36,7 @@
    python manage.py migrate
    ```
    
-6. Load fixture data\
+6. Load fixture data
    - If you want raw data with no fake user reviews, sales.   
    ```shell
    python manage.py loaddata data/genres.json data/books.json data/stocks.json data/users.json
