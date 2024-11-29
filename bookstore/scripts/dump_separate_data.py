@@ -2,7 +2,7 @@ from django.apps import apps
 from django.core.management import call_command
 
 def run():
-    excluded_models = {}  # Models to exclude
+    excluded_models = {"Genre", "Book", "Stock"}  # Models to exclude
     app_label = "bookstore"  # Replace with your app's name
 
     print("Dumping data for all models (excluding Genre and Book)...")

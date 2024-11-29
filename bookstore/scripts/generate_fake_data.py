@@ -12,17 +12,6 @@ NUM_FAVORITES = 3000  # Total number of favorites to generate
 BATCH_SIZE = 100      # Batch size for bulk create
 
 
-def create_stocks():
-    print("Creating stocks...")
-    books = Book.objects.all()  # Fetch existing books
-    stocks = [
-        Stock(book=book, quantity_in_stock=random.randint(0, 500))
-        for book in books
-    ]
-    Stock.objects.bulk_create(stocks, BATCH_SIZE)
-    print(f"Stock created for {len(stocks)} books.")
-
-
 def create_customers():
     print("Creating customers...")
     users = [
@@ -39,8 +28,8 @@ def create_customers():
 
 def create_transactions():
     print("Creating transactions and items...")
-    users = list(User.objects.all())
-    books = list(Book.objects.all())
+    users = list(User.objects.exclude(pk__in=range(1, 11)))  # Exclude users with PK 1-10
+    books = list(Book.objects.all())  # Convert queryset to a list
     transactions = []
     transaction_items = []
 
@@ -60,7 +49,7 @@ def create_transactions():
     transactions = list(Transaction.objects.all())
     for transaction in transactions:
         num_items = random.randint(1, 5)
-        selected_books = random.sample(books, num_items)
+        selected_books = random.sample(books, num_items)  # Use the list of books
         for book in selected_books:
             quantity = random.randint(1, 5)
             price_at_time = round(book.price, 2)
@@ -77,8 +66,8 @@ def create_transactions():
 
 def create_reviews():
     print("Creating reviews...")
-    users = list(User.objects.all())
-    books = list(Book.objects.all())
+    users = list(User.objects.exclude(pk__in=range(1, 11)))  # Exclude users with PK 1-10
+    books = list(Book.objects.all())  # Convert queryset to a list
     reviews = []
     existing_reviews = set(
         Review.objects.values_list("user_id", "book_id")
@@ -111,8 +100,8 @@ def create_reviews():
 
 def create_favorites():
     print("Creating favorites...")
-    users = list(User.objects.all())
-    books = list(Book.objects.all())
+    users = list(User.objects.exclude(pk__in=range(1, 11)))  # Exclude users with PK 1-10
+    books = list(Book.objects.all())  # Convert queryset to a list
     favorites = []
     existing_favorites = set(
         Favorite.objects.values_list("user_id", "book_id")
@@ -137,7 +126,7 @@ def create_favorites():
 
 def create_payments():
     print("Creating payments...")
-    transactions = Transaction.objects.filter(status="confirmed")
+    transactions = Transaction.objects.filter(status="confirmed").exclude(user__pk__in=range(1, 11))
     payments = [
         Payment(
             transaction=transaction,
@@ -151,7 +140,6 @@ def create_payments():
 
 
 def run():
-    create_stocks()
     create_customers()
     create_transactions()
     create_reviews()
