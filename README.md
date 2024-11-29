@@ -9,6 +9,18 @@ This app was created as part of the Database Systems for Software and Knowledge 
 
 Check the instruction [here](./Installation.md).
 
+## Demo Superuser
+| Username | Password |
+|----------|----------|
+| admin | 1111    |
+
+## Demo User
+| Username  | Password        |
+|-----------|-----------------|
+|   demo1   | hackme11 |
+|   demo2   | hackme22 |
+|   demo3   | hackme33 |
+-- This pattern goes on to demo9
 ## Running the Application
 
 Start the Django server (Access the web browser at <http://localhost:8000>.)
